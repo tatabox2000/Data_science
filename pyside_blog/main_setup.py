@@ -15,7 +15,7 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
 	self.setupUi(self)
 	QtCore.QObject.connect(self.file_button, QtCore.
 SIGNAL("clicked()"), self.open_file)
-	QtCore.QObject.connect(self.exec_button,QtCore.SIGNAL("clicked()"),self.canny)
+	QtCore.QObject.connect(self.exec_button,QtCore.SIGNAL("clicked()"),self.make_canny)
 	"""
     	QtCore.QObject.connect(self.open_button, QtCore.
 SIGNAL("clicked()"), self.select_file)
@@ -51,43 +51,32 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
  """
 
  def open_file(self):
-	file = QtGui.QFileDialog.getOpenFileName()
+	self.file = QtGui.QFileDialog.getOpenFileName()
         if file:
-	    self.file_edit.setText(file[0])
-	    print file
-	    scene = QtGui.QGraphicsScene()
-	    pic_Item = QtGui.QGraphicsPixmapItem(QtGui.QPixmap(file[0]))
+	    self.file_edit.setText(self.file[0])
+	    self.scene = QtGui.QGraphicsScene()
+	    pic_Item = QtGui.QGraphicsPixmapItem(QtGui.QPixmap(self.file[0]))
 	    __width = pic_Item.boundingRect().width()
 	    __height = pic_Item.boundingRect().height()
 	    __x = self.pic_View.x()
 	    __y = self.pic_View.y()
-	    print __y
 	    self.pic_View.setGeometry(QtCore.QRect(__x, __y, __width, __height))
 
 	    __main_x = int(__x + __width + 20)
 	    __main_y = int(__y + __height + 50)
 	    self.resize(__main_x,__main_y)
-	    scene.addItem(pic_Item)
-	    self.pic_View.setScene(scene)
+	    self.scene.addItem(pic_Item)
+	    self.pic_View.setScene(self.scene)
 	    return file
- def canny(self,file):
-	    file = str(self.file_edit.text())
-	    print file[0]
-	    pic,pic2 = opencv_test.open_pic(file[0])
-	    self.cv_img = opencv_test.canny(pic)
-
-
-            height, width, bytesPerComponent = cv_img.shape
-            bytesPerLine = bytesPerComponent * width;
-
-            cv2.imshow("Show Image with Opencv", self.cv_img)
-
-            # Convert to RGB for QImage.
-            cv2.cvtColor(self.cv_img, cv.CV_BGR2RGB, self.cv_img)
-            self.image = QImage(self.cv_img.data, width, height, bytesPerLine, QImage.Format_RGB888)
-	    pic_Item = QtGui.QGraphicsPixmapItem(self.image)
-	    scene.addItem(pic_Item)
-	    self.pic_View.setScene(scene)
+ def make_canny(self):
+	    cv_test = opencv_test()
+	    pic,pic2 = cv_test.open_pic(self.file[0])
+	    self.cv_img = cv_test.canny(pic2)
+            height, width, dim = self.cv_img.shape
+            bytesPerLine = dim * width
+            self.image = QtGui.QImage(self.cv_img.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
+	    pic_Item = QtGui.QGraphicsPixmapItem(QtGui.QPixmap.fromImage(self.image))
+	    self.scene.addItem(pic_Item)
 
  def change_txt(self,value):
 	self.th1_slider.setValue(float(self.th1_edit.text()))
