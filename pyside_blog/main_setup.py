@@ -34,21 +34,34 @@ SIGNAL("valueChanged(int)"), self.change_slider_th1)
 	QtCore.QObject.connect(self.th1_edit, QtCore.
 SIGNAL("textEdited(const QString&)"), self.change_txt)
  """
- """
-	self.imagewidget.installEventFilter(self)
- """
- """
+ 
+	self.pic_View.installEventFilter(self)
+
+        pic_view = self.pic_View
+        pic_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        pic_view.customContextMenuRequested.connect(self.contextMenue)
+
+
+
+ def contextMenue(self,event):
+        menu = QtGui.QMenu()
+        menu.addAction('canny',self.make_canny)
+        menu.exec_(QtGui.QCursor.pos())
+
+
+
  def eventFilter(self, source, event):
-        if (event.type() == QtCore.QEvent.MouseButtonPress and source is self.pic_view):
+        if (event.type() == QtCore.QEvent.MouseButtonPress and source is self.pic_View):
             pos = event.pos()
 	    msgbox = QtGui.QMessageBox(self)
 	    #msgbox.setText(QtCore.QString(str(pos.x())))
 	    msgbox.setText('mouse move: (%d, %d)' % (pos.x(), pos.y()))
 	    msgbox.setModal(True)
 	    ret = msgbox.exec_()
-	    #print('mouse move: (%d, %d)' % (pos.x(), pos.y()))
+	    print('mouse move: (%d, %d)' % (pos.x(), pos.y()))
         return QtGui.QWidget.eventFilter(self, source, event)
- """
+
+
 
  def open_file(self):
 	self.file = QtGui.QFileDialog.getOpenFileName()
