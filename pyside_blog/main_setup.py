@@ -34,35 +34,39 @@ SIGNAL("valueChanged(int)"), self.change_slider_th1)
 	QtCore.QObject.connect(self.th1_edit, QtCore.
 SIGNAL("textEdited(const QString&)"), self.change_txt)
  """
- 
-	self.pic_View.installEventFilter(self)
-
         pic_view = self.pic_View
         pic_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        pic_view.customContextMenuRequested.connect(self.contextMenue)
-
-
+        pic_view.customContextMenuRequested.connect(self.contextMenue) 
+	self.pic_View.installEventFilter(self)
 
  def contextMenue(self,event):
         menu = QtGui.QMenu()
         menu.addAction('canny',self.make_canny)
-        menu.exec_(QtGui.QCursor.pos())
-
-
+	menu.addAction('test1',self.make_canny)
+	menu.exec_(QtGui.QCursor.pos())
 
  def eventFilter(self, source, event):
         if (event.type() == QtCore.QEvent.MouseButtonPress and source is self.pic_View):
-            pos = event.pos()
-	    msgbox = QtGui.QMessageBox(self)
-	    #msgbox.setText(QtCore.QString(str(pos.x())))
-	    msgbox.setText('mouse move: (%d, %d)' % (pos.x(), pos.y()))
-	    msgbox.setModal(True)
-	    ret = msgbox.exec_()
-	    print('mouse move: (%d, %d)' % (pos.x(), pos.y()))
-        return QtGui.QWidget.eventFilter(self, source, event)
+		if event.button() == QtCore.Qt.RightButton:
+			pass
+		else:
+			pos = event.pos()
+			msgbox = QtGui.QMessageBox(self)
+			msgbox.setText('mouse position: (%d, %d)' % (pos.x(), pos.y()))
+			ret = msgbox.exec_()
+	elif (event.type() == QtCore.QEvent.Wheel and source is self.pic_View):
+		if event.delta() > 119 :
+			msgbox = QtGui.QMessageBox(self)
+			msgbox.setText('wheel = plus')
+			ret = msgbox.exec_()
+		elif event.delta() < -119 :
+			msgbox = QtGui.QMessageBox(self)
+			msgbox.setText('wheel = minus')
+			ret = msgbox.exec_()
+		else:
+			pass
 
-
-
+	return QtGui.QWidget.eventFilter(self, source, event)
  def open_file(self):
 	self.file = QtGui.QFileDialog.getOpenFileName()
         if file:
