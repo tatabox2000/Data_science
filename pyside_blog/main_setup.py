@@ -38,6 +38,12 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
         pic_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         pic_view.customContextMenuRequested.connect(self.contextMenue) 
 	self.pic_View.installEventFilter(self)
+	  
+	self.pic_View.setHorizontalScrollBarPolicy( QtCore.Qt.ScrollBarAlwaysOff )
+        self.pic_View.setVerticalScrollBarPolicy( QtCore.Qt.ScrollBarAlwaysOff )
+	self.pic_View.setTransformationAnchor( QtGui.QGraphicsView.NoAnchor )
+	self.scaleRatio = 1
+	self.pic_item = None
 
  def contextMenue(self,event):
         menu = QtGui.QMenu()
@@ -46,6 +52,7 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	menu.exec_(QtGui.QCursor.pos())
 
  def eventFilter(self, source, event):
+	
         if (event.type() == QtCore.QEvent.MouseButtonPress and source is self.pic_View):
 		if event.button() == QtCore.Qt.RightButton:
 			pass
@@ -55,24 +62,45 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 			msgbox.setText('mouse position: (%d, %d)' % (pos.x(), pos.y()))
 			ret = msgbox.exec_()
 	elif (event.type() == QtCore.QEvent.Wheel and source is self.pic_View):
+		
 		if event.delta() > 119 :
-			msgbox = QtGui.QMessageBox(self)
-			msgbox.setText('wheel = plus')
-			ret = msgbox.exec_()
+			self.scaleRatio += 0.01
+
+			#msgbox = QtGui.QMessageBox(self)
+			#msgbox.setText('wheel = plus')
+			#ret = msgbox.exec_()
+			self.change_size(event.pos())
+
 		elif event.delta() < -119 :
-			msgbox = QtGui.QMessageBox(self)
-			msgbox.setText('wheel = minus')
-			ret = msgbox.exec_()
+			if self.scaleRatio == 1  :
+				pass
+			else:
+				self.scaleRatio -= 0.01
+				self.change_size(event.pos())
+	    			self.scene.setSceneRect(self.scene.itemsBoundingRect())
+		#	msgbox = QtGui.QMessageBox(self)
+		#	msgbox.setText('wheel = minus')
+		#	ret = msgbox.exec_()
 		else:
 			pass
 
 	return QtGui.QWidget.eventFilter(self, source, event)
+ def change_size(self,curPos):
+	 # curPos    = event.posF()
+	 localRect = self.pic_View.mapToScene( curPos.x(), curPos.y() )
+	 self.pic_item.setTransform(QtGui.QTransform().translate( localRect.x(), localRect.y() ).scale(self.scaleRatio, self.scaleRatio).translate( -localRect.x(), -localRect.y() ))
+	 self.pic_rect = self.pic_item.transform
+	 print self.pic_rect
  def open_file(self):
 	self.file = QtGui.QFileDialog.getOpenFileName()
         if file:
+	     
 	    self.file_edit.setText(self.file[0])
 	    self.scene = QtGui.QGraphicsScene()
+	    self.scene.clear() 
 	    pic_Item = QtGui.QGraphicsPixmapItem(QtGui.QPixmap(self.file[0]))
+	    self.pic_item =  pic_Item 
+
 	    __width = pic_Item.boundingRect().width()
 	    __height = pic_Item.boundingRect().height()
 	    __x = self.pic_View.x()
@@ -93,6 +121,7 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
             bytesPerLine = dim * width
             self.image = QtGui.QImage(self.cv_img.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
 	    pic_Item = QtGui.QGraphicsPixmapItem(QtGui.QPixmap.fromImage(self.image))
+	    self.pic_item = pic_Item
 	    self.scene.addItem(pic_Item)
 
  def change_txt(self,value):
