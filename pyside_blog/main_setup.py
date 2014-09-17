@@ -52,12 +52,23 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	menu.exec_(QtGui.QCursor.pos())
 
  def eventFilter(self, source, event):
-	
-        if (event.type() == QtCore.QEvent.MouseButtonPress and source is self.pic_View):
+	if (type(event) == QtGui.QKeyEvent and event.key() == QtCore.Qt.Key_Up) :
+		self.scaleRatio += 0.01
+		self.change_size()
+	elif (event.type() == QtCore.QEvent.MouseButtonPress and source is self.pic_View):
 		if event.button() == QtCore.Qt.RightButton:
 			pass
+		elif event.button() == QtCore.Qt.LeftButton:
+			curPos = event.posF()
+			print curPos
+			print "and"
+			print self.pic_View.mapFromScene( curPos.x(), curPos.y() )
+			print "end"
+
+
 		else:
 			pos = event.pos()
+			print pos
 			msgbox = QtGui.QMessageBox(self)
 			msgbox.setText('mouse position: (%d, %d)' % (pos.x(), pos.y()))
 			ret = msgbox.exec_()
@@ -65,32 +76,29 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 		
 		if event.delta() > 119 :
 			self.scaleRatio += 0.01
-
-			#msgbox = QtGui.QMessageBox(self)
-			#msgbox.setText('wheel = plus')
-			#ret = msgbox.exec_()
 			self.change_size(event.pos())
-
 		elif event.delta() < -119 :
 			if self.scaleRatio == 1  :
 				pass
 			else:
 				self.scaleRatio -= 0.01
 				self.change_size(event.pos())
-	    			self.scene.setSceneRect(self.scene.itemsBoundingRect())
-		#	msgbox = QtGui.QMessageBox(self)
-		#	msgbox.setText('wheel = minus')
-		#	ret = msgbox.exec_()
 		else:
 			pass
 
 	return QtGui.QWidget.eventFilter(self, source, event)
- def change_size(self,curPos):
-	 # curPos    = event.posF()
-	 localRect = self.pic_View.mapToScene( curPos.x(), curPos.y() )
-	 self.pic_item.setTransform(QtGui.QTransform().translate( localRect.x(), localRect.y() ).scale(self.scaleRatio, self.scaleRatio).translate( -localRect.x(), -localRect.y() ))
-	 self.pic_rect = self.pic_item.transform
-	 print self.pic_rect
+
+ def change_size(self,curPos=None):
+	if curPos == None :
+		scene_size = self.scene.itemsBoundingRect()
+		self.pic_item.setTransform(QtGui.QTransform().translate(\
+				scene_size.width()/2,scene_size.height()/2)\
+				.scale(self.scaleRatio, self.scaleRatio)\
+				.translate(-scene_size.width()/2,-scene_size.height()/2))
+	else:
+	 	localRect = self.pic_View.mapToScene( curPos.x(), curPos.y() )
+	 	self.pic_item.setTransform(QtGui.QTransform().translate( localRect.x(), localRect.y() ).scale(self.scaleRatio, self.scaleRatio).translate( -localRect.x(), -localRect.y() ))
+	self.scene.setSceneRect(self.scene.itemsBoundingRect())
  def open_file(self):
 	self.file = QtGui.QFileDialog.getOpenFileName()
         if file:
