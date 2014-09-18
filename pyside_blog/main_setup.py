@@ -42,7 +42,8 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	self.pic_View.setHorizontalScrollBarPolicy( QtCore.Qt.ScrollBarAlwaysOff )
         self.pic_View.setVerticalScrollBarPolicy( QtCore.Qt.ScrollBarAlwaysOff )
 	self.pic_View.setTransformationAnchor( QtGui.QGraphicsView.NoAnchor )
-	self.scaleRatio = 1
+	self.scaleRatio = 1.0
+	self.scaleRatio_add = 0.02
 	self.pic_item = None
 
  def contextMenue(self,event):
@@ -52,19 +53,27 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	menu.exec_(QtGui.QCursor.pos())
 
  def eventFilter(self, source, event):
-	if (type(event) == QtGui.QKeyEvent and event.key() == QtCore.Qt.Key_Up) :
-		self.scaleRatio += 0.01
+	if (type(event) == QtGui.QKeyEvent and event.key() == QtCore.Qt.Key_A) :
+		self.scaleRatio += self.scaleRatio_add
 		self.change_size()
+	elif (event.type() == (QtCore.QEvent.MouseButtonDblClick) and source is self.pic_View):
+		self.scaleRatio = 1
+		self.change_size(event.pos())
+		print "1"
+
 	elif (event.type() == QtCore.QEvent.MouseButtonPress and source is self.pic_View):
 		if event.button() == QtCore.Qt.RightButton:
 			pass
-		elif event.button() == QtCore.Qt.LeftButton:
-			curPos = event.posF()
-			print curPos
-			print "and"
-			print self.pic_View.mapFromScene( curPos.x(), curPos.y() )
-			print "end"
-
+		
+		#elif event.button() == QtCore.Qt.LeftButton:
+		#	curPos = event.posF()
+		#	print curPos
+		#	print "from"
+		#	print self.pic_View.mapFromScene( curPos.x(), curPos.y())
+		#	print "to"
+		#	print self.pic_View.mapToScene( curPos.x(), curPos.y())
+		#	print "end"
+		
 
 		else:
 			pos = event.pos()
@@ -75,13 +84,13 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	elif (event.type() == QtCore.QEvent.Wheel and source is self.pic_View):
 		
 		if event.delta() > 119 :
-			self.scaleRatio += 0.01
+			self.scaleRatio += self.scaleRatio_add
 			self.change_size(event.pos())
 		elif event.delta() < -119 :
 			if self.scaleRatio == 1  :
 				pass
 			else:
-				self.scaleRatio -= 0.01
+				self.scaleRatio -= self.scaleRatio_add
 				self.change_size(event.pos())
 		else:
 			pass
@@ -96,9 +105,10 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 				.scale(self.scaleRatio, self.scaleRatio)\
 				.translate(-scene_size.width()/2,-scene_size.height()/2))
 	else:
-	 	localRect = self.pic_View.mapToScene( curPos.x(), curPos.y() )
-	 	self.pic_item.setTransform(QtGui.QTransform().translate( localRect.x(), localRect.y() ).scale(self.scaleRatio, self.scaleRatio).translate( -localRect.x(), -localRect.y() ))
+	 	localRect = self.pic_View.mapFromScene( curPos.x(), curPos.y() )
+	 	self.pic_item.setTransform(QtGui.QTransform().translate( float(localRect.x()), float(localRect.y()) ).scale(float(self.scaleRatio), float(self.scaleRatio)).translate( float(-localRect.x()),float( -localRect.y() )))
 	self.scene.setSceneRect(self.scene.itemsBoundingRect())
+	print self.scaleRatio
  def open_file(self):
 	self.file = QtGui.QFileDialog.getOpenFileName()
         if file:
@@ -107,7 +117,7 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	    self.scene = QtGui.QGraphicsScene()
 	    self.scene.clear() 
 	    pic_Item = QtGui.QGraphicsPixmapItem(QtGui.QPixmap(self.file[0]))
-	    self.pic_item =  pic_Item 
+	    self.pic_item =  pic_Item
 
 	    __width = pic_Item.boundingRect().width()
 	    __height = pic_Item.boundingRect().height()
@@ -115,7 +125,7 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	    __y = self.pic_View.y()
 	    self.pic_View.setGeometry(QtCore.QRect(__x, __y, __width, __height))
 
-	    __main_x = int(__x + __width + 20)
+	    __main_x = int(__x + __width + 50)
 	    __main_y = int(__y + __height + 50)
 	    self.resize(__main_x,__main_y)
 	    self.scene.addItem(pic_Item)
