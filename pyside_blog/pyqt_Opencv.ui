@@ -26,7 +26,7 @@
    <string>Qt_OpenCV</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QGraphicsView" name="pic_View">
+   <widget class="QGraphicsView" name="pic_view">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -34,6 +34,33 @@
       <width>591</width>
       <height>451</height>
      </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="mouseTracking">
+     <bool>true</bool>
+    </property>
+    <property name="contextMenuPolicy">
+     <enum>Qt::CustomContextMenu</enum>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::RightToLeft</enum>
+    </property>
+    <property name="transformationAnchor">
+     <enum>QGraphicsView::AnchorUnderMouse</enum>
+    </property>
+    <property name="resizeAnchor">
+     <enum>QGraphicsView::AnchorUnderMouse</enum>
+    </property>
+    <property name="viewportUpdateMode">
+     <enum>QGraphicsView::SmartViewportUpdate</enum>
+    </property>
+    <property name="rubberBandSelectionMode">
+     <enum>Qt::ContainsItemBoundingRect</enum>
     </property>
    </widget>
    <widget class="QWidget" name="layoutWidget">
@@ -137,7 +164,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>330</x>
@@ -185,12 +212,12 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>230</x>
       <y>10</y>
-      <width>91</width>
+      <width>156</width>
       <height>91</height>
      </rect>
     </property>
@@ -227,7 +254,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -260,20 +287,13 @@
      </item>
     </layout>
    </widget>
-   <zorder>pic_View</zorder>
+   <zorder>layoutWidget</zorder>
+   <zorder>layoutWidget</zorder>
+   <zorder>pic_view</zorder>
    <zorder>layoutWidget</zorder>
    <zorder>layoutWidget</zorder>
    <zorder>layoutWidget</zorder>
-   <zorder>threshold1_slider</zorder>
-   <zorder></zorder>
-   <zorder>threshold2_slider</zorder>
-   <zorder>size_slider</zorder>
-   <zorder>threshold1_edit</zorder>
-   <zorder>threshold2_edit</zorder>
-   <zorder>size_edit</zorder>
-   <zorder>label</zorder>
-   <zorder>label_2</zorder>
-   <zorder>label_3</zorder>
+   <zorder>layoutWidget</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

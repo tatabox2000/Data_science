@@ -3,6 +3,7 @@ from __future__ import with_statement
 
 import numpy as np
 import sys
+import math
 from PySide import QtCore,QtGui
 import os
 from pyqt_Opencv import Ui_Qt_CV_MainWindow
@@ -34,16 +35,20 @@ SIGNAL("valueChanged(int)"), self.change_slider_th1)
 	QtCore.QObject.connect(self.th1_edit, QtCore.
 SIGNAL("textEdited(const QString&)"), self.change_txt)
  """
-        pic_view = self.pic_View
-        pic_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        pic_view.customContextMenuRequested.connect(self.contextMenue) 
-	self.pic_View.installEventFilter(self)
+        self.pic_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.pic_view.customContextMenuRequested.connect(self.contextMenue) 
+	self.pic_view.installEventFilter(self)
 	  
-	self.pic_View.setHorizontalScrollBarPolicy( QtCore.Qt.ScrollBarAlwaysOff )
-        self.pic_View.setVerticalScrollBarPolicy( QtCore.Qt.ScrollBarAlwaysOff )
-	self.pic_View.setTransformationAnchor( QtGui.QGraphicsView.NoAnchor )
+	#self.pic_view.setHorizontalScrollBarPolicy( QtCore.Qt.ScrollBarAlwaysOff )
+	#self.pic_view.setVerticalScrollBarPolicy( QtCore.Qt.ScrollBarAlwaysOff )
+	self.pic_item = QtGui.QGraphicsPixmapItem()
+	self.pic_view.setMouseTracking(True)
+   	
+	self.pic_view.setTransformationAnchor( QtGui.QGraphicsView.AnchorUnderMouse )
+	self.pic_view.setResizeAnchor(QtGui.QGraphicsView.AnchorUnderMouse)
 	self.scaleRatio = 1.0
-	self.scaleRatio_add = 0.02
+	self.scaleFacter = 0.02
+	self.scale = 1
 	self.pic_item = None
 
  def contextMenue(self,event):
@@ -51,86 +56,135 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
         menu.addAction('canny',self.make_canny)
 	menu.addAction('test1',self.make_canny)
 	menu.exec_(QtGui.QCursor.pos())
+ def WheelEvent(self,event):
+	 super(self.scene(self), self).wheelEvent(event)
+	 QEvent.Wheel.ignore(self)
 
  def eventFilter(self, source, event):
 	if (type(event) == QtGui.QKeyEvent and event.key() == QtCore.Qt.Key_A) :
 		self.scaleRatio += self.scaleRatio_add
 		self.change_size()
-	elif (event.type() == (QtCore.QEvent.MouseButtonDblClick) and source is self.pic_View):
+	elif (event.type() == (QtCore.QEvent.MouseButtonDblClick) and source is self.pic_view):
 		self.scaleRatio = 1
 		self.change_size(event.pos())
 		print "1"
 
-	elif (event.type() == QtCore.QEvent.MouseButtonPress and source is self.pic_View):
+	elif (event.type() == QtCore.QEvent.MouseButtonPress and source is self.pic_view):
 		if event.button() == QtCore.Qt.RightButton:
-			pass
-		
-		#elif event.button() == QtCore.Qt.LeftButton:
+			self.pic_item.resetTransform()
+			self.scene.setSceneRect(self.scene.itemsBoundingRect())
+
+			#self.scaleRatio =0.9
+			#self.change_size(event.pos())
+
+		elif event.button() == QtCore.Qt.LeftButton:
+			self.scaleRatio = 1.1
+			self.change_size(event.pos())
+			
 		#	curPos = event.posF()
 		#	print curPos
 		#	print "from"
-		#	print self.pic_View.mapFromScene( curPos.x(), curPos.y())
+		#	print self.pic_view.mapFromScene( curPos.x(), curPos.y())
 		#	print "to"
-		#	print self.pic_View.mapToScene( curPos.x(), curPos.y())
+		#	print self.pic_view.mapToScene( curPos.x(), curPos.y())
 		#	print "end"
-		
 
 		else:
 			pos = event.pos()
-			print pos
+			#self.pic_item.setPos(0,0)
+			#self.pic_view.translate(500,500)
 			msgbox = QtGui.QMessageBox(self)
-			msgbox.setText('mouse position: (%d, %d)' % (pos.x(), pos.y()))
+			scenepos = self.pic_item.mapToScene( pos.x(), pos.y() )
+			scenepos2 = self.pic_item.mapFromScene( pos.x(), pos.y() )
+			msgbox.setText('mouse position: (%d, %d) \r\nto :(%d,%d) \r\nfrom:(%d,%d)'\
+					% (pos.x()/self.scaleRatio, pos.y()/self.scaleRatio,\
+					scenepos.x()/self.scaleRatio, scenepos.y()/self.scaleRatio,\
+					scenepos2.x()/self.scaleRatio, scenepos2.y()/self.scaleRatio\
+					))
 			ret = msgbox.exec_()
-	elif (event.type() == QtCore.QEvent.Wheel and source is self.pic_View):
-		
+			x,y = self.pic_coordinate(event.pos())
+			print x,y
+			"""
+			print self.pic_item.pos()
+			print self.pic_item.scenePos()
+			a=  self.pic_item.sceneBoundingRect()
+			print a.width()
+			print a
+			print self.scale
+			"""
+	elif (event.type() == QtCore.QEvent.Wheel and source is self.pic_view):
 		if event.delta() > 119 :
-			self.scaleRatio += self.scaleRatio_add
+			self.scaleRatio = 1.2
+			#self.scaleRatio += self.scaleRatio_add
 			self.change_size(event.pos())
 		elif event.delta() < -119 :
 			if self.scaleRatio == 1  :
 				pass
 			else:
-				self.scaleRatio -= self.scaleRatio_add
+				self.scaleRatio =0.8
+				#self.scaleRatio -= self.scaleRatio_add
 				self.change_size(event.pos())
 		else:
 			pass
-
 	return QtGui.QWidget.eventFilter(self, source, event)
 
+ def pic_coordinate(self,curPos=None):
+	scenepos = self.pic_view.mapToScene(curPos.x(),curPos.y())
+	item_position = self.pic_item.sceneBoundingRect()
+	_x,_y,_h,_w = item_position.x(),item_position.y(),item_position.height(),item_position.width()
+	#print 	_x,_y,_h,_w
+	#print scenepos
+	#print self.scale
+	pic_x = (scenepos.x() - _x )/self.scale
+	pic_y = (scenepos.y() - _y )/self.scale
+	return pic_x,pic_y
+	
  def change_size(self,curPos=None):
 	if curPos == None :
-		scene_size = self.scene.itemsBoundingRect()
-		self.pic_item.setTransform(QtGui.QTransform().translate(\
-				scene_size.width()/2,scene_size.height()/2)\
-				.scale(self.scaleRatio, self.scaleRatio)\
-				.translate(-scene_size.width()/2,-scene_size.height()/2))
+		scene_size = self.scene.itemsBoundingRect()	
+	#	self.pic_item.setTransform(QtGui.QTransform().translate(\
+			#			scene_size.width()/2,scene_size.height()/2)\
+			#	.scale(self.scaleRatio, self.scaleRatio)\
+			#	.translate(-scene_size.width()/2,-scene_size.height()/2))
+		
+		#self.pic_View.setGeometry(QtCore.QRect(__x, __y, __width, __height))
 	else:
-	 	localRect = self.pic_View.mapFromScene( curPos.x(), curPos.y() )
-	 	self.pic_item.setTransform(QtGui.QTransform().translate( float(localRect.x()), float(localRect.y()) ).scale(float(self.scaleRatio), float(self.scaleRatio)).translate( float(-localRect.x()),float( -localRect.y() )))
-	self.scene.setSceneRect(self.scene.itemsBoundingRect())
-	print self.scaleRatio
+	 	localRect = self.pic_view.mapToScene(curPos.x(),curPos.y())
+		self.pic_item.translate(float(localRect.x()),float(localRect.y()))
+		self.pic_item.scale(float(self.scaleRatio),float(self.scaleRatio))
+		self.pic_item.translate(-self.scaleRatio*float(localRect.x()),-self.scaleRatio*float(localRect.y()))
+	#self.scene.setSceneRect(self.scene.itemsBoundingRect())
+	self.scale = self.scale*self.scaleRatio
+
+	
  def open_file(self):
 	self.file = QtGui.QFileDialog.getOpenFileName()
-        if file:
-	     
+        if file:	     
 	    self.file_edit.setText(self.file[0])
 	    self.scene = QtGui.QGraphicsScene()
 	    self.scene.clear() 
 	    pic_Item = QtGui.QGraphicsPixmapItem(QtGui.QPixmap(self.file[0]))
 	    self.pic_item =  pic_Item
-
-	    __width = pic_Item.boundingRect().width()
-	    __height = pic_Item.boundingRect().height()
-	    __x = self.pic_View.x()
-	    __y = self.pic_View.y()
-	    self.pic_View.setGeometry(QtCore.QRect(__x, __y, __width, __height))
-
-	    __main_x = int(__x + __width + 50)
-	    __main_y = int(__y + __height + 50)
-	    self.resize(__main_x,__main_y)
-	    self.scene.addItem(pic_Item)
-	    self.pic_View.setScene(self.scene)
+	 
+	    self.scene.addItem(self.pic_item)
+	    self.pic_view.setScene(self.scene)
+	    #self.pic_item.scale(1.1,1.1)
+	    #self.pic_item.setFlags(QtGui.QGraphicsItem.ItemIsMovable)
+	    self.adjust_view()
 	    return file
+
+ def adjust_view(self):
+	 bar = 8
+	 __width = self.pic_item.boundingRect().width()+bar
+	 __height = self.pic_item.boundingRect().height()+bar
+	 __x = self.pic_view.x()
+	 __y = self.pic_view.y()
+	 self.pic_view.setGeometry(QtCore.QRect(__x, __y, __width, __height))
+
+	 __main_x = int(__x + __width + 100)
+	 __main_y = int(__y + __height + 50)
+	 self.resize(__main_x,__main_y)
+	 
  def make_canny(self):
 	    cv_test = opencv_test()
 	    pic,pic2 = cv_test.open_pic(self.file[0])
@@ -140,6 +194,7 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
             self.image = QtGui.QImage(self.cv_img.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
 	    pic_Item = QtGui.QGraphicsPixmapItem(QtGui.QPixmap.fromImage(self.image))
 	    self.pic_item = pic_Item
+	    self.scene.clear()
 	    self.scene.addItem(pic_Item)
 
  def change_txt(self,value):
