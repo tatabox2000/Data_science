@@ -70,7 +70,7 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 		print "1"
 
 	elif (event.type() == QtCore.QEvent.MouseButtonPress and source is self.pic_view):
-		_x,_y,pic_x,pic_y = self.pic_coordinate(event.pos())
+		_x0,_y0,pic_x,pic_y = self.pic_coordinate(event.pos())
 		if event.button() == QtCore.Qt.RightButton:
 			self.pic_item.resetTransform()
 			self.scene.setSceneRect(self.scene.itemsBoundingRect())
@@ -79,13 +79,11 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 			#self.change_size(event.pos())
 
 		elif event.button() == QtCore.Qt.LeftButton:
-			self.scaleRatio = 1.1
-			self.change_size(event.pos(),_x,_y,pic_x,pic_y)
+			self.scaleRatio = 2
+			self.change_size(event.pos(),_x0,_y0,pic_x,pic_y)
 	
 		else:
 			pos = event.pos()
-			#self.pic_item.setPos(0,0)
-			#self.pic_view.translate(500,500)
 			msgbox = QtGui.QMessageBox(self)
 			scenepos = self.pic_item.mapToScene( pos.x(), pos.y() )
 			scenepos2 = self.pic_item.mapFromScene( pos.x(), pos.y() )
@@ -107,7 +105,7 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 			"""
 	elif (event.type() == QtCore.QEvent.Wheel and source is self.pic_view):
 		if event.delta() > 119 :
-			self.scaleRatio = 1.2
+			self.scaleRatio = 2
 			#self.scaleRatio += self.scaleRatio_add
 			self.change_size(event.pos())
 		elif event.delta() < -119 :
@@ -124,27 +122,38 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
  def pic_coordinate(self,curPos=None):
 	scenepos = self.pic_view.mapToScene(curPos.x(),curPos.y())
 	item_position = self.pic_item.sceneBoundingRect()
-	_x,_y,_h,_w = item_position.x(),item_position.y(),item_position.height(),item_position.width()
+	_x0,_y0,_h,_w = item_position.x(),item_position.y(),item_position.height(),item_position.width()
 	#print 	_x,_y,_h,_w
 	#print scenepos
 	#print self.scale
-	pic_x = (scenepos.x() - _x )/self.scale
-	pic_y = (scenepos.y() - _y )/self.scale
-	return _x,_y,pic_x,pic_y
+	pic_x = (scenepos.x() - _x0 )/self.scale
+	pic_y = (scenepos.y() - _y0 )/self.scale
+	return _x0,_y0,pic_x,pic_y
 	
- def change_size(self,curPos=None,_x=None,_y=None,pic_x=None,pic_y=None):
+ def change_size(self,curPos=None,_x0=None,_y0=None,pic_x=None,pic_y=None):
 	if curPos == None :
 		scene_size = self.scene.itemsBoundingRect()
-	else:
-		localRect = self.pic_view.mapToScene(curPos.x(),curPos.y())
-		new_x = pic_x * self.scale * self.scaleRatio +_x
-		new_y = pic_y * self.scale * self.scaleRatio +_y
+	else:	
+		print pic_x,pic_y
+		localRect = self.pic_item.mapToScene(curPos.x(),curPos.y())
+		print localRect
+		localRect2 = self.pic_view.mapToScene(curPos.x(),curPos.y())
+		print localRect
+
+
+
+
+		new_x = pic_x * self.scale * self.scaleRatio +_x0
+		new_y = pic_y * self.scale * self.scaleRatio +_y0
 		ch_x = new_x - localRect.x()
 		ch_y = new_y - localRect.y()
-	 	self.pic_item.translate(float(localRect.x()),float(localRect.y()))
+		#self.pic_item.setPos(float(1),float(1))
+		#self.pic_item.translate(float(5),float(5))
+		#self.pic_item.translate(float(localRect.x()),float(localRect.y()))
 		self.pic_item.scale(float(self.scaleRatio),float(self.scaleRatio))
-		self.pic_item.translate(-float(localRect.x()-10),-float(localRect.y()-5))
-		print new_y,localRect.y()
+		#self.pic_item.translate(-float(localRect.x()-10),-float(localRect.y()-5))
+		#print new_y,localRect.y()
+		print self.pic_item.sceneBoundingRect()
 	#self.scene.setSceneRect(self.scene.itemsBoundingRect())
 	self.scale = self.scale*self.scaleRatio
 
