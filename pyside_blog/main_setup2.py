@@ -1,12 +1,14 @@
 # -*- coding: cp932 -*-
 from __future__ import with_statement
-
+import PySide
+import pyqtgraph as pg
+import cv2
 import numpy as np
 import sys
 import math
 from PySide import QtCore,QtGui
 import os
-from pyqt_Opencv import Ui_Qt_CV_MainWindow
+from pygraph_Opencv import Ui_Qt_CV_MainWindow
 from opencv_test import opencv_test
 
 class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
@@ -14,9 +16,10 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
         super(DesignerMainWindow, self).__init__(parent)
        	self.ui = Ui_Qt_CV_MainWindow()
 	self.setupUi(self)
-	QtCore.QObject.connect(self.file_button, QtCore.
-SIGNAL("clicked()"), self.open_file)
+	QtCore.QObject.connect(self.file_button, QtCore.SIGNAL("clicked()"), self.open_file)
 	QtCore.QObject.connect(self.exec_button,QtCore.SIGNAL("clicked()"),self.make_canny)
+
+	
 	"""
     	QtCore.QObject.connect(self.open_button, QtCore.
 SIGNAL("clicked()"), self.select_file)
@@ -37,28 +40,27 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
  """
         self.pic_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.pic_view.customContextMenuRequested.connect(self.contextMenue) 
-	self.pic_view.installEventFilter(self)
+	#self.pic_view.installEventFilter(self)
 	  
 	self.pic_view.setHorizontalScrollBarPolicy( QtCore.Qt.ScrollBarAlwaysOff )
 	self.pic_view.setVerticalScrollBarPolicy( QtCore.Qt.ScrollBarAlwaysOff )
 	self.pic_item = QtGui.QGraphicsPixmapItem()
-	#self.pic_view.setMouseTracking(True)
-	#self.pic_view.ViewportUpdateMode(QtGui.QGraphicsView.FullViewportUpdate)	
 	self.pic_view.setTransformationAnchor( QtGui.QGraphicsView.NoAnchor )
 	self.pic_view.setResizeAnchor(QtGui.QGraphicsView.NoAnchor)
 	self.scaleRatio = 1.0
 	self.scaleFacter = 0.02
 	self.scale = 1
 	self.pic_item = None
+ def mouseMoved(self,pos):
+	curPos = self.pic_item.mapFromScene(pos.pos())
+	print int(curPos.x()),int(curPos.y())
+
 
  def contextMenue(self,event):
         menu = QtGui.QMenu()
         menu.addAction('canny',self.make_canny)
 	menu.addAction('test1',self.make_canny)
 	menu.exec_(QtGui.QCursor.pos())
- def WheelEvent(self,event):
-	 super(self.scene(self), self).wheelEvent(event)
-	 QEvent.Wheel.ignore(self)
 
  def eventFilter(self, source, event):
 	if (type(event) == QtGui.QKeyEvent and event.key() == QtCore.Qt.Key_A) :
@@ -74,9 +76,6 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 		if event.button() == QtCore.Qt.RightButton:
 			self.pic_item.resetTransform()
 			self.scene.setSceneRect(self.scene.itemsBoundingRect())
-
-			#self.scaleRatio =0.9
-			#self.change_size(event.pos())
 
 		elif event.button() == QtCore.Qt.LeftButton:
 			self.scaleRatio = 2
@@ -158,22 +157,21 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 
 	
  def open_file(self):
+	
 	self.file = QtGui.QFileDialog.getOpenFileName()
-        if file:	     
-	    self.file_edit.setText(self.file[0])
-	    self.scene = QtGui.QGraphicsScene()
-	    self.scene.clear() 
-	    pic_Item = QtGui.QGraphicsPixmapItem(QtGui.QPixmap(self.file[0]))
-	    self.pic_item =  pic_Item
-	 
-	    self.scene.addItem(self.pic_item)
-	    self.pic_view.setScene(self.scene)
-	    #self.pic_item.scale(1.1,1.1)
-	    #self.pic_item.setFlags(QtGui.QGraphicsItem.ItemIsMovable)
-	    self.adjust_view()
-	    self.scaleRatio = 1
-
-	    return file
+        if file:
+		self.file_edit.setText(self.file[0])
+		im = cv2.imread(self.file[0])
+		im_c = cv2.cvtColor(im,cv2.COLOR_BGR2RGB)
+		
+		vb = self.pic_view.addViewBox()
+		self.pic_item = pg.ImageItem(im)
+		vb.addItem(self.pic_item)
+		vb.setAspectLocked(True)
+		self.pic_view.scene().sigMouseClicked.connect(self.mouseMoved) 
+	    	self.adjust_view()
+	    	self.scaleRatio = 1
+	return file
 
  def adjust_view(self):
 	 bar = 8

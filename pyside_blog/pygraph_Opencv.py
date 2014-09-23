@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'pyqt_Opencv.ui'
+# Form implementation generated from reading ui file 'pygraph_Opencv.ui'
 #
-# Created: Tue Sep 23 12:03:43 2014
+# Created: Tue Sep 23 13:48:03 2014
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -22,7 +22,7 @@ class Ui_Qt_CV_MainWindow(object):
         Qt_CV_MainWindow.setAcceptDrops(False)
         self.centralwidget = QtGui.QWidget(Qt_CV_MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.pic_view = QtGui.QGraphicsView(self.centralwidget)
+        self.pic_view = GraphicsLayoutWidget(self.centralwidget)
         self.pic_view.setGeometry(QtCore.QRect(10, 170, 591, 451))
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
@@ -32,7 +32,7 @@ class Ui_Qt_CV_MainWindow(object):
         self.pic_view.setMouseTracking(True)
         self.pic_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.pic_view.setLayoutDirection(QtCore.Qt.RightToLeft)
-        self.pic_view.setTransformationAnchor(QtGui.QGraphicsView.AnchorViewCenter)
+        self.pic_view.setTransformationAnchor(QtGui.QGraphicsView.NoAnchor)
         self.pic_view.setResizeAnchor(QtGui.QGraphicsView.NoAnchor)
         self.pic_view.setViewportUpdateMode(QtGui.QGraphicsView.FullViewportUpdate)
         self.pic_view.setRubberBandSelectionMode(QtCore.Qt.ContainsItemBoundingRect)
@@ -208,3 +208,4 @@ class Ui_Qt_CV_MainWindow(object):
         self.menuFile.setTitle(QtGui.QApplication.translate("Qt_CV_MainWindow", "File", None, QtGui.QApplication.UnicodeUTF8))
         self.actionQuit.setText(QtGui.QApplication.translate("Qt_CV_MainWindow", "Quit", None, QtGui.QApplication.UnicodeUTF8))
 
+from pyqtgraph import GraphicsLayoutWidget
