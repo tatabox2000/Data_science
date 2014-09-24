@@ -10,6 +10,7 @@ from PySide import QtCore,QtGui
 import os
 from pygraph_Opencv import Ui_Qt_CV_MainWindow
 from opencv_test import opencv_test
+from matrix_co import coordinateForCv
 
 class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
  def __init__(self, parent = None):
@@ -163,9 +164,12 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 		self.file_edit.setText(self.file[0])
 		im = cv2.imread(self.file[0])
 		im_c = cv2.cvtColor(im,cv2.COLOR_BGR2RGB)
+		rows,cols,dim = im_c.shape
+		M = cv2.getRotationMatrix2D((cols/2,rows/2),-90,1)
+		self.pyqt_pic = cv2.warpAffine(im_c,M,(cols,rows))
 		
 		vb = self.pic_view.addViewBox()
-		self.pic_item = pg.ImageItem(im)
+		self.pic_item = pg.ImageItem(self.pyqt_pic)
 		vb.addItem(self.pic_item)
 		vb.setAspectLocked(True)
 		self.pic_view.scene().sigMouseClicked.connect(self.mouseMoved) 
