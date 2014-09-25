@@ -19,8 +19,7 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
 	self.setupUi(self)
 	QtCore.QObject.connect(self.file_button, QtCore.SIGNAL("clicked()"), self.open_file)
 	QtCore.QObject.connect(self.exec_button,QtCore.SIGNAL("clicked()"),self.make_canny)
-
-	
+	self.vb = None
 	"""
     	QtCore.QObject.connect(self.open_button, QtCore.
 SIGNAL("clicked()"), self.select_file)
@@ -161,17 +160,25 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	
 	self.file = QtGui.QFileDialog.getOpenFileName()
         if file:
+		if self.pic_item == None:
+			pass
+		else:
+			pass
+		#self.pic_vie.removeItem(self.pic_item)
 		self.file_edit.setText(self.file[0])
 		im = cv2.imread(self.file[0])
 		im_c = cv2.cvtColor(im,cv2.COLOR_BGR2RGB)
 		rows,cols,dim = im_c.shape
 		M = cv2.getRotationMatrix2D((cols/2,rows/2),-90,1)
 		self.pyqt_pic = cv2.warpAffine(im_c,M,(cols,rows))
-		
-		vb = self.pic_view.addViewBox()
+		if self.vb == None:
+			self.vb = self.pic_view.addViewBox()
+		else:
+			pass
+
 		self.pic_item = pg.ImageItem(self.pyqt_pic)
-		vb.addItem(self.pic_item)
-		vb.setAspectLocked(True)
+		self.vb.addItem(self.pic_item)
+		self.vb.setAspectLocked(True)
 		self.pic_view.scene().sigMouseClicked.connect(self.mouseMoved) 
 	    	self.adjust_view()
 	    	self.scaleRatio = 1
