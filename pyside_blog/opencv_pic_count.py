@@ -1,7 +1,6 @@
 # -*- coding: cp932 -*-
 from __future__ import with_statement
 import cv2
-import numpy as np
 import os
 import matplotlib.pyplot as plt
 import numpy as np
