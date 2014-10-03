@@ -11,6 +11,7 @@ import os
 from pygraph_Opencv import Ui_Qt_CV_MainWindow
 from opencv_test import opencv_test
 from matrix_co import coordinateForCv
+from pic_count import pic_count
 
 class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
  def __init__(self, parent = None):
@@ -51,16 +52,69 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	self.scaleFacter = 0.02
 	self.scale = 1
 	self.pic_item = None
+	self.erase_num = []
  def mouseMoved(self,pos):
 	curPos = self.pic_item.mapFromScene(pos.pos())
-	print int(curPos.x()),int(curPos.y())
+	item = self.pic_item.boundingRect()
+	co = coordinateForCv()
+	_w,_h = int(item.width()),int(item.height())
+	if curPos.x() < 0 or curPos.y() < 0 or curPos.x() > _w or  curPos.y() > _h:
+		pass
+	else :
+		pic_coordinate = co.coordinate2cv(int(curPos.x()),int(curPos.y()),_w,_h)
+		print pic_coordinate[0], pic_coordinate[1]
 
+ def contour_select(self,pic_contour ,contour, curPos):
+	for i ,cnt in enemurate(contour):
+		 in_out = cv2.pointPolygonTest(cnt,(curPos[0],curPos[1]),False)
+		 if in_out == 1 or in_out == 0:
+			 cur_contour = np.zeros_like(pic_contour)
+			 cur_contour = cv2.drawContours(cur_contour,cnt,0,(255,255,0),3)
+		 else :
+			pass
+	add_image = cv2.addWeighted(pic_contour,1,cur_contour,0.5,0)
+	return add_image
 
  def contextMenue(self,event):
         menu = QtGui.QMenu()
         menu.addAction('canny',self.make_canny)
-	menu.addAction('test1',self.make_canny)
+	menu.addAction('All_drow',self.all_drowcontour)
+	self.make_canny()
+
+	#menu.addAction('All_area',self.all_area)
 	menu.exec_(QtGui.QCursor.pos())
+
+ def all_area(self):
+	 self.pic_item.scale(1,1)
+
+ def all_drowcontour(self):
+	 count = pic_count()
+	 color,color2,imgray,color_final,im_c = count.red_change(self.imgray)
+
+	 imgray_mask,all_1,mask_area1,self.all_num,self.all_cnt = count.picture_mask(imgray)
+	 coor = coordinateForCv()
+	 self.cv_img = coor.cv2pyqtgraph(imgray_mask)
+	 
+	 imgray_mask_bool = np.asarray(self.cv_img,np.bool8)
+	 im_1 = np.zeros_like(self.pyqt_pic)
+	 im_1[imgray_mask_bool]=(255,0,0)
+
+	 add = cv2.addWeighted(self.pyqt_pic,1,im_1,0.5,0)
+	 
+	 self.pic_item = pg.ImageItem(add)
+	 self.vb.addItem(self.pic_item)
+	 
+
+ def close_event(self):
+	reply = QtGui.QMessageBox.question(self,'Message',
+        'Are you sure to quit?',QtGui.QMessageBox.Yes |
+        QtGui.QMessageBox.No,QtGui.QMessageBox.No)
+	if reply == QtGui.QMessageBox.Yes:
+		QtCore.QCoreApplication.instance().quit()
+	else:
+		pass
+
+
 
  def eventFilter(self, source, event):
 	if (type(event) == QtGui.QKeyEvent and event.key() == QtCore.Qt.Key_A) :
@@ -72,7 +126,6 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 		print "1"
 
 	elif (event.type() == QtCore.QEvent.MouseButtonPress and source is self.pic_view):
-		_x0,_y0,pic_x,pic_y = self.pic_coordinate(event.pos())
 		if event.button() == QtCore.Qt.RightButton:
 			self.pic_item.resetTransform()
 			self.scene.setSceneRect(self.scene.itemsBoundingRect())
@@ -94,68 +147,10 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 			ret = msgbox.exec_()
 			x,y = self.pic_coordinate(event.pos())
 			print x,y
-			"""
-			print self.pic_item.pos()
-			print self.pic_item.scenePos()
-			a=  self.pic_item.sceneBoundingRect()
-			print a.width()
-			print a
-			print self.scale
-			"""
+
 	elif (event.type() == QtCore.QEvent.Wheel and source is self.pic_view):
-		if event.delta() > 119 :
-			self.scaleRatio = 1.1
-			#self.scaleRatio += self.scaleRatio_add
-			self.change_size(event.pos())
-		elif event.delta() < -119 :
-			if self.scaleRatio == 1  :
-				pass
-			else:
-				self.scaleRatio =0.8
-				#self.scaleRatio -= self.scaleRatio_add
-				self.change_size(event.pos())
-		else:
-			pass
-	return QtGui.QWidget.eventFilter(self, source, event)
+		return QtGui.QWidget.eventFilter(self, source, event)
 
- def pic_coordinate(self,curPos=None):
-	scenepos = self.pic_view.mapToScene(curPos.x(),curPos.y())
-	item_position = self.pic_item.sceneBoundingRect()
-	_x0,_y0,_h,_w = item_position.x(),item_position.y(),item_position.height(),item_position.width()
-	#print 	_x,_y,_h,_w
-	#print scenepos
-	#print self.scale
-	pic_x = (scenepos.x() - _x0 )/self.scale
-	pic_y = (scenepos.y() - _y0 )/self.scale
-	return _x0,_y0,pic_x,pic_y
-	
- def change_size(self,curPos=None,_x0=None,_y0=None,pic_x=None,pic_y=None):
-	if curPos == None :
-		scene_size = self.scene.itemsBoundingRect()
-	else:	
-		print pic_x,pic_y
-		localRect = self.pic_item.mapToScene(curPos.x(),curPos.y())
-		print localRect
-		localRect2 = self.pic_view.mapToScene(curPos.x(),curPos.y())
-		print localRect
-
-		new_x = pic_x * self.scale * self.scaleRatio +_x0
-		new_y = pic_y * self.scale * self.scaleRatio +_y0
-		ch_x = new_x - localRect.x()
-		ch_y = new_y - localRect.y()
-		#self.pic_item.setPos(float(1),float(1))
-		#self.pic_item.translate(float(5),float(5))
-		self.pic_item.translate(float(localRect.x()),float(localRect.y()))
-		self.pic_item.scale(float(self.scaleRatio),float(self.scaleRatio))
-		self.pic_item.translate(-float(localRect.x()),-float(localRect.y()))
-		#print new_y,localRect.y()
-		print self.pic_item.sceneBoundingRect()
-		#self.pic_view.ensureVisible(200*2*scaleFacter,200*2*self.scaleFacter,300,300)
-		#self.pic_view.centerOn(100*self.scaleRatio,100*self.scaleRatio)
-	self.scene.setSceneRect(self.scene.itemsBoundingRect())
-	self.scale = self.scale*self.scaleRatio
-
-	
  def open_file(self):
 	
 	self.file = QtGui.QFileDialog.getOpenFileName()
@@ -164,24 +159,22 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 			pass
 		else:
 			pass
-		#self.pic_vie.removeItem(self.pic_item)
 		self.file_edit.setText(self.file[0])
 		im = cv2.imread(self.file[0])
-		im_c = cv2.cvtColor(im,cv2.COLOR_BGR2RGB)
-		rows,cols,dim = im_c.shape
-		M = cv2.getRotationMatrix2D((cols/2,rows/2),-90,1)
-		self.pyqt_pic = cv2.warpAffine(im_c,M,(cols,rows))
+		self.imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+		coor = coordinateForCv()
+	 	self.pyqt_pic = coor.cv2pyqtgraph(im)
+
 		if self.vb == None:
-			self.vb = self.pic_view.addViewBox()
+			self.vb = self.pic_view.addViewBox(enableMenu=False)
 		else:
 			pass
-
 		self.pic_item = pg.ImageItem(self.pyqt_pic)
 		self.vb.addItem(self.pic_item)
 		self.vb.setAspectLocked(True)
-		self.pic_view.scene().sigMouseClicked.connect(self.mouseMoved) 
+		self.pic_view.scene().sigMouseClicked.connect(self.mouseMoved)
+		#self.pic_view.scene().sigMouseClicked.connect(self.eventFilter)
 	    	self.adjust_view()
-	    	self.scaleRatio = 1
 	return file
 
  def adjust_view(self):
@@ -197,16 +190,14 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	 self.resize(__main_x,__main_y)
 	 
  def make_canny(self):
-	    cv_test = opencv_test()
-	    pic,pic2 = cv_test.open_pic(self.file[0])
-	    self.cv_img = cv_test.canny(pic2)
-            height, width, dim = self.cv_img.shape
-            bytesPerLine = dim * width
-            self.image = QtGui.QImage(self.cv_img.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
-	    pic_Item = QtGui.QGraphicsPixmapItem(QtGui.QPixmap.fromImage(self.image))
-	    self.pic_item = pic_Item
-	    self.scene.clear()
-	    self.scene.addItem(pic_Item)
+	 cv_test = opencv_test()
+	 pic,pic2 = cv_test.open_pic(self.file[0])
+	 cv_img = cv_test.canny(pic2)
+	 coor = coordinateForCv()
+	 self.pyqt_pic = coor.cv2pyqtgraph(cv_img)
+	 self.pic_item = pg.ImageItem(self.pyqt_pic)
+	 self.vb.addItem(self.pic_item)
+
 
  def change_txt(self,value):
 	self.th1_slider.setValue(float(self.th1_edit.text()))
@@ -224,8 +215,7 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
         file = QtGui.QFileDialog.getOpenFileName()
         if file:
             self.ini_line.setText(file)
- 
- """
+ """ 
  def closeEvent(self,event):
         confirmquit = QtGui.QMessageBox.question(self,'Message',
         'Are you sure to quit?',QtGui.QMessageBox.Yes |

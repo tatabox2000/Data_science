@@ -10,6 +10,8 @@ class opencv_test:
 		pic_color = cv2.cvtColor(pic,cv2.COLOR_BGR2RGB)
 
 		return pic,pic_color
+	
+	
 	def canny(self,pic):
 		img =cv2.cvtColor(pic,cv2.COLOR_BGR2GRAY)
 		edges = cv2.Canny(img,100,200)
