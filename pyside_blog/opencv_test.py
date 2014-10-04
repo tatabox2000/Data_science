@@ -7,8 +7,10 @@ class opencv_test:
 		self.file = file
 	def open_pic(self,file):
 		pic = cv2.imread(file)
-		pic_color = cv2.cvtColor(pic,cv2.COLOR_BGR2RGB)
-
+		if len(pic.shape) == 3:
+			pic_color = cv2.cvtColor(pic,cv2.COLOR_BGR2RGB)
+		else:
+			pic_color = pic
 		return pic,pic_color
 	
 	

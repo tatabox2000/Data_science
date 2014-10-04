@@ -161,7 +161,10 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 			pass
 		self.file_edit.setText(self.file[0])
 		im = cv2.imread(self.file[0])
-		self.imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+		if len(im.shape) == 3:
+			self.imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+		else:
+			self.imgray = im
 		coor = coordinateForCv()
 	 	self.pyqt_pic = coor.cv2pyqtgraph(im)
 
