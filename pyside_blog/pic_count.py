@@ -13,12 +13,16 @@ class pic_count:
 	self.file = file
 	self.pix = 9
 	self.gray =re.compile('Snapshot[2-3]')
-	self.maxArea = 5000
-	self.minArea = 120
+	#self.maxArea = 5000
+	self.maxArea = 80000
+	#self.minArea = 120
+	self.minArea = 10
 	self.filename = "picture.csv"
 	self.min_number =120
-	self.smallRange = 50
-	self.largeRange = 185
+	self.largeRange = 200
+	self.smallRange = 0
+	#self.smallRange = 50
+	#self.largeRange = 185
 
  def picture_make(self,before,dim=3 ):
     	bak=[]
@@ -151,7 +155,7 @@ class pic_count:
 			else:
 				pass
 if __name__ == '__main__':
-	a = opencv_pic_count()
+	a = pic_count()
 	color,im0,add,im_UV0,im_c,im_1,im_UV,im_UV3,UV_mask,color_final,all_2,im_2  =a.open_files()
 	
 	plt.subplot(3,4,1),plt.imshow(im_c)

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pyqt_Opencv.ui'
 #
-# Created: Tue Sep 23 12:03:43 2014
+# Created: Sun Oct 05 11:31:37 2014
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -32,7 +32,7 @@ class Ui_Qt_CV_MainWindow(object):
         self.pic_view.setMouseTracking(True)
         self.pic_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.pic_view.setLayoutDirection(QtCore.Qt.RightToLeft)
-        self.pic_view.setTransformationAnchor(QtGui.QGraphicsView.AnchorViewCenter)
+        self.pic_view.setTransformationAnchor(QtGui.QGraphicsView.NoAnchor)
         self.pic_view.setResizeAnchor(QtGui.QGraphicsView.NoAnchor)
         self.pic_view.setViewportUpdateMode(QtGui.QGraphicsView.FullViewportUpdate)
         self.pic_view.setRubberBandSelectionMode(QtCore.Qt.ContainsItemBoundingRect)

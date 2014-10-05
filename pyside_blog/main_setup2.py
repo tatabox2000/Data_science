@@ -8,6 +8,7 @@ import sys
 import math
 from PySide import QtCore,QtGui
 import os
+from PIL import Image as pil 
 from pygraph_Opencv import Ui_Qt_CV_MainWindow
 from opencv_test import opencv_test
 from matrix_co import coordinateForCv
@@ -21,6 +22,11 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
 	QtCore.QObject.connect(self.file_button, QtCore.SIGNAL("clicked()"), self.open_file)
 	QtCore.QObject.connect(self.exec_button,QtCore.SIGNAL("clicked()"),self.make_canny)
 	self.vb = None
+	self.all_cnt = None
+	self.all_con = None
+	self.cur_cnt = None
+	self_cur_cnt_number = None
+
 	"""
     	QtCore.QObject.connect(self.open_button, QtCore.
 SIGNAL("clicked()"), self.select_file)
@@ -41,7 +47,7 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
  """
         self.pic_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.pic_view.customContextMenuRequested.connect(self.contextMenue) 
-	#self.pic_view.installEventFilter(self)
+	self.pic_view.installEventFilter(self)
 	  
 	self.pic_view.setHorizontalScrollBarPolicy( QtCore.Qt.ScrollBarAlwaysOff )
 	self.pic_view.setVerticalScrollBarPolicy( QtCore.Qt.ScrollBarAlwaysOff )
@@ -53,131 +59,148 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	self.scale = 1
 	self.pic_item = None
 	self.erase_num = []
+
  def mouseMoved(self,pos):
-	curPos = self.pic_item.mapFromScene(pos.pos())
+	pyqt_pos = self.pic_item.mapFromScene(pos.pos())
 	item = self.pic_item.boundingRect()
 	co = coordinateForCv()
-	_w,_h = int(item.width()),int(item.height())
-	if curPos.x() < 0 or curPos.y() < 0 or curPos.x() > _w or  curPos.y() > _h:
+	_w,_h = int(item.width()),int(item.height()) 
+	if pyqt_pos.x() < 0 or pyqt_pos.y() < 0 or pyqt_pos.x() > _w or pyqt_pos.y() > _h:
 		pass
 	else :
-		pic_coordinate = co.coordinate2cv(int(curPos.x()),int(curPos.y()),_w,_h)
-		print pic_coordinate[0], pic_coordinate[1]
+		pic_coordinate = co.coordinate2cv(int(pyqt_pos.x()),int(pyqt_pos.y()),_w,_h)
+		x = np.ndarray.tolist(pic_coordinate[1])
+		y = np.ndarray.tolist(pic_coordinate[0])
+		self.curPos= (x[0]+5,y[0]+5)
 
- def contour_select(self,pic_contour ,contour, curPos):
-	for i ,cnt in enemurate(contour):
-		 in_out = cv2.pointPolygonTest(cnt,(curPos[0],curPos[1]),False)
-		 if in_out == 1 or in_out == 0:
-			 cur_contour = np.zeros_like(pic_contour)
-			 cur_contour = cv2.drawContours(cur_contour,cnt,0,(255,255,0),3)
-		 else :
+ def normal_contour(self):
+	ret,thresh = cv2.threshold(self.imgray,5,255,0)
+	self.all_cnt, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+	for h,cnt in enumerate(self.all_cnt):
+    		mask = np.zeros(self.imgray.shape,np.uint8)
+    		cv2.drawContours(mask,[cnt],0,255,-1)
+		#self.open_or_add_pic(mask,mask,1,1)
+ def cut_area(self):
+	 if self.cur_cnt is None:
+		 pass
+	 else:
+	 	coo = coordinateForCv()
+	 	top,bottom,left,right =coo.cut_contour(self.cur_cnt)
+		im_con = self.im[top:bottom,left:right+20,:]
+		filename = self.last_dir + '/' + 'contour.jpg' + '\'' 
+		temp_file = QtGui.QFileDialog.getSaveFileName(self,directory = filename,filter="Image Files (*.png *.bmp *jpg)")
+		if temp_file == None:
 			pass
-	add_image = cv2.addWeighted(pic_contour,1,cur_contour,0.5,0)
-	return add_image
+		else:
+			cv2.imwrite(temp_file[0],im_con)
+			self.pic_item.setImage(im_con)
+ def write_scale(self,im):
+	 im.shape[0]
+
+ def contour_select(self):
+	if self.all_cnt is None :
+		pass
+	else:
+		for i ,cnt in enumerate(self.all_cnt):
+			in_out = cv2.pointPolygonTest(cnt,(self.curPos[0],self.curPos[1]),False)
+			if in_out == 1 or in_out == 0:
+				self.cur_contour = np.zeros_like(self.im)
+				cv2.drawContours(self.cur_contour,[cnt],0,(0,255,0),-1)	 
+				coor = coordinateForCv()
+				self.cur_cnt = cnt
+				self_cur_cnt_number = i
+				self.cv_img = coor.cv2pyqtgraph(self.cur_contour)
+				self.open_or_add_pic(self.pyqt_pic,self.cv_img,0.2,1)
+
+			else :
+				pass
 
  def contextMenue(self,event):
         menu = QtGui.QMenu()
-        menu.addAction('canny',self.make_canny)
+        menu.addAction('Canny',self.make_canny)
 	menu.addAction('All_drow',self.all_drowcontour)
-	self.make_canny()
-
-	#menu.addAction('All_area',self.all_area)
+	menu.addAction('Threshold_only',self.normal_contour)
+	menu.addAction('Clear',self.clear)
+	menu.addAction('Save Contour',self.cut_area)
+	self.contour_select()
 	menu.exec_(QtGui.QCursor.pos())
 
+	#menu.addAction('All_area',self.all_area)
  def all_area(self):
-	 self.pic_item.scale(1,1)
+	 print "i"
+ def clear(self):
+	 self.pic_item.setImage(self.pyqt_pic)
 
  def all_drowcontour(self):
 	 count = pic_count()
 	 color,color2,imgray,color_final,im_c = count.red_change(self.imgray)
-
 	 imgray_mask,all_1,mask_area1,self.all_num,self.all_cnt = count.picture_mask(imgray)
 	 coor = coordinateForCv()
 	 self.cv_img = coor.cv2pyqtgraph(imgray_mask)
 	 
 	 imgray_mask_bool = np.asarray(self.cv_img,np.bool8)
-	 im_1 = np.zeros_like(self.pyqt_pic)
-	 im_1[imgray_mask_bool]=(255,0,0)
+	 self.all_mask = np.zeros_like(self.pyqt_pic)
+	 self.all_mask[imgray_mask_bool]=(255,255,0)
+	 self.open_or_add_pic(self.pyqt_pic,self.all_mask,0.7,0.7)
+	 self.all_con = self.add
 
-	 add = cv2.addWeighted(self.pyqt_pic,1,im_1,0.5,0)
-	 
-	 self.pic_item = pg.ImageItem(add)
+ def open_or_add_pic(self,pic1,pic2=None,weight1=1,weight2=0.5):
+	 self.pic_item = pg.ImageItem()
 	 self.vb.addItem(self.pic_item)
-	 
-
- def close_event(self):
-	reply = QtGui.QMessageBox.question(self,'Message',
-        'Are you sure to quit?',QtGui.QMessageBox.Yes |
-        QtGui.QMessageBox.No,QtGui.QMessageBox.No)
-	if reply == QtGui.QMessageBox.Yes:
-		QtCore.QCoreApplication.instance().quit()
-	else:
-		pass
-
-
+	 if pic2 == None:
+		self.add =pic1
+	 else:
+	 	self.add = cv2.addWeighted(pic1,weight1,pic2,weight2,0)
+	 self.pic_item.setImage(self.add)
 
  def eventFilter(self, source, event):
 	if (type(event) == QtGui.QKeyEvent and event.key() == QtCore.Qt.Key_A) :
-		self.scaleRatio += self.scaleRatio_add
-		self.change_size()
-	elif (event.type() == (QtCore.QEvent.MouseButtonDblClick) and source is self.pic_view):
-		self.scaleRatio = 1
-		self.change_size(event.pos())
-		print "1"
-
-	elif (event.type() == QtCore.QEvent.MouseButtonPress and source is self.pic_view):
+		pass
+	if (event.type() == (QtCore.QEvent.MouseButtonDblClick) and source is self.pic_view):
+		pass
+	if (event.type() == QtCore.QEvent.MouseButtonPress and source is self.pic_view):
 		if event.button() == QtCore.Qt.RightButton:
-			self.pic_item.resetTransform()
-			self.scene.setSceneRect(self.scene.itemsBoundingRect())
+			pass
 
-		elif event.button() == QtCore.Qt.LeftButton:
-			self.scaleRatio = 2
-			self.change_size(event.pos(),_x0,_y0,pic_x,pic_y)
+		if event.button() == QtCore.Qt.LeftButton:
+			if self.all_con is None :
+				pass
+			else:
+				self.pic_item.setImage(self.all_con)
 	
-		else:
-			pos = event.pos()
-			msgbox = QtGui.QMessageBox(self)
-			scenepos = self.pic_item.mapToScene( pos.x(), pos.y() )
-			scenepos2 = self.pic_item.mapFromScene( pos.x(), pos.y() )
-			msgbox.setText('mouse position: (%d, %d) \r\nto :(%d,%d) \r\nfrom:(%d,%d)'\
-					% (pos.x()/self.scaleRatio, pos.y()/self.scaleRatio,\
-					scenepos.x()/self.scaleRatio, scenepos.y()/self.scaleRatio,\
-					scenepos2.x()/self.scaleRatio, scenepos2.y()/self.scaleRatio\
-					))
-			ret = msgbox.exec_()
-			x,y = self.pic_coordinate(event.pos())
-			print x,y
+	#if (event.type() == QtCore.QEvent.MouseButtonRelease and source is self.pic_view):
+	#	if event.button() == QtCore.Qt.RightButton:
+	#		print "ok" 
 
-	elif (event.type() == QtCore.QEvent.Wheel and source is self.pic_view):
-		return QtGui.QWidget.eventFilter(self, source, event)
+	return QtGui.QWidget.eventFilter(self, source, event)
 
  def open_file(self):
-	
-	self.file = QtGui.QFileDialog.getOpenFileName()
-        if file:
+	self.filename = QtGui.QFileDialog.getOpenFileName(self,filter="Image Files (*.png *.bmp *jpg)")
+        if self.filename is not None:
 		if self.pic_item == None:
 			pass
 		else:
-			pass
-		self.file_edit.setText(self.file[0])
-		im = cv2.imread(self.file[0])
-		if len(im.shape) == 3:
-			self.imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+			self.vb.removeItem(self.pic_item)
+		self.file_edit.setText(self.filename[0])
+		self.im = cv2.imread(self.filename[0])
+		self.all_con = None
+		self.last_dir = os.path.dirname(unicode(self.filename))
+
+		if len(self.im.shape) == 3:
+			self.imgray = cv2.cvtColor(self.im,cv2.COLOR_BGR2GRAY)
 		else:
-			self.imgray = im
+			self.imgray = self.im
 		coor = coordinateForCv()
-	 	self.pyqt_pic = coor.cv2pyqtgraph(im)
+	 	self.pyqt_pic = coor.cv2pyqtgraph(self.im)
 
 		if self.vb == None:
 			self.vb = self.pic_view.addViewBox(enableMenu=False)
+			self.vb.setAspectLocked(True)
 		else:
 			pass
-		self.pic_item = pg.ImageItem(self.pyqt_pic)
-		self.vb.addItem(self.pic_item)
-		self.vb.setAspectLocked(True)
+		self.open_or_add_pic(self.pyqt_pic)
 		self.pic_view.scene().sigMouseClicked.connect(self.mouseMoved)
-		#self.pic_view.scene().sigMouseClicked.connect(self.eventFilter)
-	    	self.adjust_view()
+		self.adjust_view()
 	return file
 
  def adjust_view(self):
@@ -186,10 +209,13 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	 __height = self.pic_item.boundingRect().height()+bar
 	 __x = self.pic_view.x()
 	 __y = self.pic_view.y()
+	 if __width <= 512 or __height <= 512:
+ 		__width, __height  = 512,512
+	 else:
+		 pass
 	 self.pic_view.setGeometry(QtCore.QRect(__x, __y, __width, __height))
-
-	 __main_x = int(__x + __width + 100)
-	 __main_y = int(__y + __height + 50)
+	 __main_x = int(__x + __width + 80)
+	 __main_y = int(__y + __height + 80)
 	 self.resize(__main_x,__main_y)
 	 
  def make_canny(self):
@@ -197,10 +223,8 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	 pic,pic2 = cv_test.open_pic(self.file[0])
 	 cv_img = cv_test.canny(pic2)
 	 coor = coordinateForCv()
-	 self.pyqt_pic = coor.cv2pyqtgraph(cv_img)
-	 self.pic_item = pg.ImageItem(self.pyqt_pic)
-	 self.vb.addItem(self.pic_item)
-
+	 self.canny = coor.cv2pyqtgraph(cv_img)
+	 self.open_or_add_pic(self.canny)
 
  def change_txt(self,value):
 	self.th1_slider.setValue(float(self.th1_edit.text()))
