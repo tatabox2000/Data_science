@@ -86,7 +86,7 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	 else:
 	 	coo = coordinateForCv()
 	 	top,bottom,left,right =coo.cut_contour(self.cur_cnt)
-		im_con = self.im[top:bottom,left:right+20,:]
+		im_con = self.im[top:bottom+20,left:right,:]
 		filename = self.last_dir + '/' + 'contour.jpg' + '\'' 
 		temp_file = QtGui.QFileDialog.getSaveFileName(self,directory = filename,filter="Image Files (*.png *.bmp *jpg)")
 		if temp_file == None:
