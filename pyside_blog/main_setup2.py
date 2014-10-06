@@ -25,7 +25,8 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
 	self.all_cnt = None
 	self.all_con = None
 	self.cur_cnt = None
-	self_cur_cnt_number = None
+	self.cur_cnt_number = None
+	self.erase_num = []
 
 	"""
     	QtCore.QObject.connect(self.open_button, QtCore.
@@ -59,6 +60,25 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	self.scale = 1
 	self.pic_item = None
 	self.erase_num = []
+ def erase_area(self):
+	 self.erase_num.append(self.cur_cnt_number)
+	 cou = pic_count()
+	 erased_mask_cv = cou.erased_contour(self.im,self.all_num,self.all_cnt,self.erase_num)
+	 coor = coordinateForCv()
+	 erased_mask_qt = coor.cv2pyqtgraph(erased_mask_cv)
+
+	 self.open_or_add_pic(self.pyqt_pic,erased_mask_qt,0.7,0.7)
+	 self.all_con = self.add
+
+	 
+
+ def edge_chekbox(self):
+	 for h,con in enumerate[self.all_cnt]:
+		top,bottom,left,right =coo.contour_data(cnt)
+		if top == 0 or bottom == 0 or left == 0 or right == 0:
+			pass
+		else:
+			pass
 
  def mouseMoved(self,pos):
 	pyqt_pos = self.pic_item.mapFromScene(pos.pos())
@@ -85,8 +105,8 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 		 pass
 	 else:
 	 	coo = coordinateForCv()
-	 	top,bottom,left,right =coo.cut_contour(self.cur_cnt)
-		im_con = self.im[top:bottom+20,left:right,:]
+	 	top,bottom,left,right =coo.contour_data(self.cur_cnt)
+		im_con = self.im[top-5:bottom+20,left-5:right+5,:]
 		filename = self.last_dir + '/' + 'contour.jpg' + '\'' 
 		temp_file = QtGui.QFileDialog.getSaveFileName(self,directory = filename,filter="Image Files (*.png *.bmp *jpg)")
 		if temp_file == None:
@@ -108,12 +128,13 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 				cv2.drawContours(self.cur_contour,[cnt],0,(0,255,0),-1)	 
 				coor = coordinateForCv()
 				self.cur_cnt = cnt
-				self_cur_cnt_number = i
+				self.cur_cnt_number = i + 1
 				self.cv_img = coor.cv2pyqtgraph(self.cur_contour)
 				self.open_or_add_pic(self.pyqt_pic,self.cv_img,0.2,1)
 
 			else :
 				pass
+
 
  def contextMenue(self,event):
         menu = QtGui.QMenu()
@@ -122,6 +143,8 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	menu.addAction('Threshold_only',self.normal_contour)
 	menu.addAction('Clear',self.clear)
 	menu.addAction('Save Contour',self.cut_area)
+	menu.addAction('Erase contour',self.erase_area)
+
 	self.contour_select()
 	menu.exec_(QtGui.QCursor.pos())
 
@@ -133,8 +156,9 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 
  def all_drowcontour(self):
 	 count = pic_count()
-	 color,color2,imgray,color_final,im_c = count.red_change(self.imgray)
-	 imgray_mask,all_1,mask_area1,self.all_num,self.all_cnt = count.picture_mask(imgray)
+	 color,imgray,color_final = count.red_change(self.imgray)
+	 imgray_mask,all_1,self.all_num,self.all_cnt = count.all_contour(imgray)
+
 	 coor = coordinateForCv()
 	 self.cv_img = coor.cv2pyqtgraph(imgray_mask)
 	 
@@ -165,7 +189,8 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 		if event.button() == QtCore.Qt.LeftButton:
 			if self.all_con is None :
 				pass
-			else:
+
+			else :
 				self.pic_item.setImage(self.all_con)
 	
 	#if (event.type() == QtCore.QEvent.MouseButtonRelease and source is self.pic_view):
@@ -217,7 +242,7 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	 __main_x = int(__x + __width + 80)
 	 __main_y = int(__y + __height + 80)
 	 self.resize(__main_x,__main_y)
-	 
+	 self.all_con
  def make_canny(self):
 	 cv_test = opencv_test()
 	 pic,pic2 = cv_test.open_pic(self.file[0])

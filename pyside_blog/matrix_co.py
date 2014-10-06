@@ -33,7 +33,7 @@ class coordinateForCv:
 	index = np.where(cv_pic_coor==255)
 	return index
 
- def cut_contour(self,cnt):
+ def contour_data(self,cnt):
 	leftmost = tuple(cnt[cnt[:,:,0].argmin()][0])
 	rightmost = tuple(cnt[cnt[:,:,0].argmax()][0])
 	topmost = tuple(cnt[cnt[:,:,1].argmin()][0])
