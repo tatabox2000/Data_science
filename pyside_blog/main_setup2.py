@@ -153,7 +153,8 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 
  def all_drowcontour(self):
 	 count = pic_count()
-	 color,imgray,color_final = count.red_change(self.imgray)
+	 self.imgray=cv2.bilateralFilter(self.imgray,10,20,5)
+	 imgray,im_color = count.gray_range_select(self.imgray,0,255)
 	 imgray_mask,all_1,self.all_num,self.all_cnt = count.all_contour(imgray)
 
 	 coor = coordinateForCv()

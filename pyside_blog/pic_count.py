@@ -36,6 +36,7 @@ class pic_count:
     	return bak
 
  def all_contour(self,im):
+	
 	contours,hierarch =cv2.findContours(im,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         mask = np.zeros((im.shape[0],im.shape[1]),np.uint8)
 	all_ =[]
@@ -98,20 +99,21 @@ class pic_count:
  def gray_range_select(self,im,_min=None,_max=None):
 	 im_gray,im_color =self.picture_make(im)
  	 if _max == None:
-		th_bool=(im >= self.smallRange)
+		print 10
+		th_bool=(im >= _min)
          	im_gray[th_bool]= 255
          	im_color[th_bool]=(255,255,0)
-	 	th_bool=(im > self.smallRange)&(im < self.largeRange)
 	 elif _min == None:
-		th_bool=(im <= self.largeRange)
+		print 20
+		th_bool=(im <= _max)
          	im_gray[th_bool]= 255
          	im_color[th_bool]=(255,255,0)
-	 	th_bool=(im > self.smallRange)&(im < self.largeRange)
+	 	
 	 else :
-		th_bool=(im > self.smallRange) and (im < self.largeRange)
+		print 30
+		th_bool=(im > _min)&(im < _max)
          	im_gray[th_bool]= 255
          	im_color[th_bool]=(255,255,0)
-	 	th_bool=(im > self.smallRange)&(im < self.largeRange)
 
 	 return  im_gray,im_color
 
@@ -167,7 +169,6 @@ class pic_count:
 
 				bila_UV=cv2.bilateralFilter(im_UV,10,20,5)
 				th_UV,im_UV3 = self.gray_range_select(bila_UV,self.smallRange,self.largeRange )
-				print bila_UV
 				imgray_mask,all_1,self.all_num1,self.all_cnt1 = self.picture_mask(imgray)
 				UV_mask,all_2,self.all_num1,self.all_cnt1 = self.picture_mask(th_UV)
 
