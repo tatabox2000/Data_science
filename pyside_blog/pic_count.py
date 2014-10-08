@@ -19,6 +19,7 @@ class pic_count:
 	self.minArea = 10
 	self.filename = "picture.csv"
 	self.min_number =120
+	#self.min_number =254
 	self.largeRange = 200
 	self.smallRange = 0
 	#self.smallRange = 50
@@ -58,7 +59,7 @@ class pic_count:
 	 erased_mask = np.zeros_like(im)
 	 for h,cnt in zip(all_num,all_cnt):
 		 if h  not in erase_num :
-			 cv2.drawContours(erased_mask,[cnt],0,(255,255,0),-1)	
+			 cv2.drawContours(erased_mask,[cnt],0,(0,255,255),-1)	
 			 #cv2.imshow("",erased_mask)
 			 #cv2.waitKey(0)
 			 #cv2.destroyAllWindows()  
@@ -67,8 +68,8 @@ class pic_count:
 			 
 	 return erased_mask
 
-
  def make_name(self,name = None,i=1):
+	 print name
 	 name4,name5 =re.split(r'\\',name)
          name6 = name4 + '_' + str(i)
          name7 = name6 + '_mask'
@@ -76,32 +77,44 @@ class pic_count:
          name7_jpg = name7 + '.jpg'
 	 name_UV = re.sub(r'Snapshot1',r'Snapshot2',name)
 	 return name6_jpg,name7_jpg,name_UV
+ 
+ def color_filter(self,im,color = 'r'):
+	 if  len(im.shape) == 2:
+		 return im
+	 elif color == 'r' :
+		 select_color = np.zeros((im.shape[0],im.shape[1]),np.uint8)
+		 select_color[:,:] = im[:,:,2]
+		 return select_color
+	 elif color == 'g' :
+		 select_color = np.zeros((im.shape[0],im.shape[1]),np.uint8)
+		 select_color[:,:] = im[:,:,1]
+		 return select_color
 
- def red_change(self,im0):
-         im,color=self.picture_make(im0)
-	 if len(im0.shape) ==3:
-		 im = im0[:,:,2]
+	 elif color == 'b' :
+		 select_color = np.zeros((im.shape[0],im.shape[1]),np.uint8)
+		 select_color[:,:] = im[:,:,1]
+		 return select_color
+
+ def gray_range_select(self,im,_min=None,_max=None):
+	 im_gray,im_color =self.picture_make(im)
+ 	 if _max == None:
+		th_bool=(im >= self.smallRange)
+         	im_gray[th_bool]= 255
+         	im_color[th_bool]=(255,255,0)
+	 	th_bool=(im > self.smallRange)&(im < self.largeRange)
+	 elif _min == None:
+		th_bool=(im <= self.largeRange)
+         	im_gray[th_bool]= 255
+         	im_color[th_bool]=(255,255,0)
+	 	th_bool=(im > self.smallRange)&(im < self.largeRange)
 	 else :
-		 im = im0
+		th_bool=(im > self.smallRange) and (im < self.largeRange)
+         	im_gray[th_bool]= 255
+         	im_color[th_bool]=(255,255,0)
+	 	th_bool=(im > self.smallRange)&(im < self.largeRange)
 
-	 #red=(im >254)
-	 red = (im > self.min_number )
-         color[red]=(255,0,0)
-	 imgray,color_final= self.picture_make(im0)
-	 imgray[red] = 255
-	 color_final[red] = (255,0,0)
-	 return color,imgray,color_final
+	 return  im_gray,im_color
 
- def mono_change(self,im_UV):
-	 #ブロックノイズ除去、範囲指定による二値化
-         #blur_UV = cv2.GaussianBlur(im_UV,(5,5),0)
-         bila_UV=cv2.bilateralFilter(im_UV,10,20,5)
-         th_UV,im_UV3 =self.picture_make(im_UV)
-	 th_bool=(bila_UV > self.smallRange)&(bila_UV < self.largeRange)
-         th_UV[th_bool]= 255
-         im_UV3[th_bool]=(255,255,0)
-
-	 return th_UV,im_UV3
 
  def pic_calc(self,color_final,all_1):
 	red_area =np.sum(color_final)
@@ -118,6 +131,16 @@ class pic_count:
 	color_final[mask_bool]=(0,0,0)
 
 	return mask_bool,mask,color_final,imgray_mask_bool,mask_bool
+ 
+ def get_pic_names(name_ext = '*.jpg',dir = None):
+	 if dir == None :
+		 pos_name  = glob.glob(name_ext)
+	 else :
+		 name_ext = dir + '\\' + name_ext
+		 print name_ext
+		 pos_name  = glob.glob(name_ext)
+
+	 return pos_name
 
  def open_files(self,dir = None):
 	if dir is not None :
@@ -128,7 +151,7 @@ class pic_count:
 		all_color = []
     		i = 1
     		pic.write(u"サンプル名,ファイル名,面積,数\n")
-    		for name in glob.glob('*\*.jpg'):
+    		for name in glob.glob('*\\*.jpg'):
         		if self.gray.search(name) is None:
 				name2 = re.sub(r'\\',',',name) + ','
 	         		name3 = re.sub('\n',',',name2)
@@ -138,10 +161,13 @@ class pic_count:
 				im0 = cv2.imread(name)
 				im_UV0 =cv2.imread(name_UV)
 				im_UV = cv2.cvtColor(im_UV0,cv2.COLOR_BGR2GRAY)
-				
-				color,imgray,color_final= self.red_change(im0)
-				th_UV,im_UV3 = self.mono_change(im_UV)
+				red_pic = self.color_filter(im0,'r')
+				imgray,color = self.gray_range_select(red_pic ,self.min_number )
+				color_final = color.copy() 
 
+				bila_UV=cv2.bilateralFilter(im_UV,10,20,5)
+				th_UV,im_UV3 = self.gray_range_select(bila_UV,self.smallRange,self.largeRange )
+				print bila_UV
 				imgray_mask,all_1,self.all_num1,self.all_cnt1 = self.picture_mask(imgray)
 				UV_mask,all_2,self.all_num1,self.all_cnt1 = self.picture_mask(th_UV)
 
@@ -165,7 +191,14 @@ class pic_count:
 				pass
 if __name__ == '__main__':
 	a = pic_count()
+	_dir = os.path.abspath(__file__)
+	name = '*.jpg'
+	print a.get_pic_names(name,_dir)
+
+
+
 	color,im0,add,im_UV0,im_1,im_UV,im_UV3,UV_mask,color_final,all_2,im_2  =a.open_files()
+	
 	im_c = cv2.cvtColor(im0,cv2.COLOR_BGR2RGB)
 
 	plt.subplot(3,4,1),plt.imshow(im_c)

@@ -60,6 +60,7 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	self.scale = 1
 	self.pic_item = None
 	self.erase_num = []
+
  def erase_area(self):
 	 self.erase_num.append(self.cur_cnt_number)
 	 cou = pic_count()
@@ -70,10 +71,8 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	 self.open_or_add_pic(self.pyqt_pic,erased_mask_qt,0.7,0.7)
 	 self.all_con = self.add
 
-	 
-
  def edge_chekbox(self):
-	 for h,con in enumerate[self.all_cnt]:
+	for h,con in enumerate[self.all_cnt]:
 		top,bottom,left,right =coo.contour_data(cnt)
 		if top == 0 or bottom == 0 or left == 0 or right == 0:
 			pass
@@ -131,10 +130,8 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 				self.cur_cnt_number = i + 1
 				self.cv_img = coor.cv2pyqtgraph(self.cur_contour)
 				self.open_or_add_pic(self.pyqt_pic,self.cv_img,0.2,1)
-
 			else :
 				pass
-
 
  def contextMenue(self,event):
         menu = QtGui.QMenu()
@@ -217,7 +214,6 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 			self.imgray = self.im
 		coor = coordinateForCv()
 	 	self.pyqt_pic = coor.cv2pyqtgraph(self.im)
-
 		if self.vb == None:
 			self.vb = self.pic_view.addViewBox(enableMenu=False)
 			self.vb.setAspectLocked(True)
@@ -245,8 +241,7 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	 self.all_con
  def make_canny(self):
 	 cv_test = opencv_test()
-	 pic,pic2 = cv_test.open_pic(self.file[0])
-	 cv_img = cv_test.canny(pic2)
+	 cv_img = cv_test.canny(self.im)
 	 coor = coordinateForCv()
 	 self.canny = coor.cv2pyqtgraph(cv_img)
 	 self.open_or_add_pic(self.canny)
