@@ -110,10 +110,13 @@ class pic_count:
          	im_color[th_bool]=(255,255,0)
 	 	
 	 else :
-		print 30
-		th_bool=(im > _min)&(im < _max)
+		print _min,_max
+		th_bool=(im >= _min)&(im <= _max)
          	im_gray[th_bool]= 255
-         	im_color[th_bool]=(255,255,0)
+         	im_color[th_bool]=(0,255,0)
+		#cv2.imshow("",im_color)
+		#cv2.waitKey(0)
+		#cv2.destroyAllWindows() 
 
 	 return  im_gray,im_color
 
@@ -134,7 +137,7 @@ class pic_count:
 
 	return mask_bool,mask,color_final,imgray_mask_bool,mask_bool
  
- def get_pic_names(name_ext = '*.jpg',dir = None):
+ def get_pic_names(self,name_ext = '*.jpg',dir = None):
 	 if dir == None :
 		 pos_name  = glob.glob(name_ext)
 	 else :
