@@ -27,6 +27,9 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
 	self.cur_cnt = None
 	self.cur_cnt_number = None
 	self.erase_num = []
+	undoicon = QtGui.QIcon.fromTheme("edit-undo")
+	#print undoicon
+	#self.centralwidget.setWindowIcon(QtGui.QIcon(undoicon))
 
 	"""
     	QtCore.QObject.connect(self.open_button, QtCore.
@@ -64,7 +67,28 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
  def erase_area(self):
 	 self.erase_num.append(self.cur_cnt_number)
 	 cou = pic_count()
-	 erased_mask_cv = cou.erased_contour(self.im,self.all_num,self.all_cnt,self.erase_num)
+	 erased_mask_cv = cou.re_draw_contour(self.im,self.all_num,self.all_cnt,self.erase_num)
+	 coor = coordinateForCv()
+	 erased_mask_qt = coor.cv2pyqtgraph(erased_mask_cv)
+
+	 self.open_or_add_pic(self.pyqt_pic,erased_mask_qt,0.7,0.7)
+	 self.all_con = self.add
+ def add_area(self):
+	 
+	 self.erase_num.remove(self.cur_cnt_number)
+
+	 cou = pic_count()
+	 erased_mask_cv = cou.re_draw_contour(self.im,self.all_num,self.all_cnt,self.erase_num)
+	 coor = coordinateForCv()
+	 erased_mask_qt = coor.cv2pyqtgraph(erased_mask_cv)
+
+	 self.open_or_add_pic(self.pyqt_pic,erased_mask_qt,0.7,0.7)
+	 self.all_con = self.add
+
+ def recover_area(self):
+	 self.erase_num.pop()
+	 cou = pic_count()
+	 erased_mask_cv = cou.re_draw_contour(self.im,self.all_num,self.all_cnt,self.erase_num)
 	 coor = coordinateForCv()
 	 erased_mask_qt = coor.cv2pyqtgraph(erased_mask_cv)
 
@@ -90,7 +114,7 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 		pic_coordinate = co.coordinate2cv(int(pyqt_pos.x()),int(pyqt_pos.y()),_w,_h)
 		x = np.ndarray.tolist(pic_coordinate[1])
 		y = np.ndarray.tolist(pic_coordinate[0])
-		self.curPos= (x[0]+5,y[0]+5)
+		self.curPos= (x[0]+4,y[0]+4)
 
  def normal_contour(self):
 	ret,thresh = cv2.threshold(self.imgray,5,255,0)
@@ -127,7 +151,7 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 				cv2.drawContours(self.cur_contour,[cnt],0,(0,255,0),-1)	 
 				coor = coordinateForCv()
 				self.cur_cnt = cnt
-				self.cur_cnt_number = i + 1
+				self.cur_cnt_number = i
 				self.cv_img = coor.cv2pyqtgraph(self.cur_contour)
 				self.open_or_add_pic(self.pyqt_pic,self.cv_img,0.2,1)
 			else :
@@ -141,6 +165,8 @@ SIGNAL("textEdited(const QString&)"), self.change_txt)
 	menu.addAction('Clear',self.clear)
 	menu.addAction('Save Contour',self.cut_area)
 	menu.addAction('Erase contour',self.erase_area)
+	menu.addAction('Add contour',self.add_area)
+	menu.addAction('Recover a erased contour',self.recover_area)
 
 	self.contour_select()
 	menu.exec_(QtGui.QCursor.pos())

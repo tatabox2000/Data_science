@@ -36,13 +36,12 @@ class pic_count:
     	return bak
 
  def all_contour(self,im):
-	
 	contours,hierarch =cv2.findContours(im,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         mask = np.zeros((im.shape[0],im.shape[1]),np.uint8)
 	all_ =[]
 	all_num =[]
 	all_cnt =[]
-	i = 1
+	i = 0
         for h,cnt in enumerate(contours):
 		area = cv2.contourArea(cnt)
 		all_.append(area)
@@ -56,7 +55,8 @@ class pic_count:
 			i += 1
 			all_cnt.append(cnt)
     	return mask,all_,all_num,all_cnt
- def erased_contour(self,im,all_num,all_cnt,erase_num ):
+ 
+ def re_draw_contour(self,im,all_num,all_cnt,erase_num ):
 	 erased_mask = np.zeros_like(im)
 	 for h,cnt in zip(all_num,all_cnt):
 		 if h  not in erase_num :
@@ -99,18 +99,15 @@ class pic_count:
  def gray_range_select(self,im,_min=None,_max=None):
 	 im_gray,im_color =self.picture_make(im)
  	 if _max == None:
-		print 10
 		th_bool=(im >= _min)
          	im_gray[th_bool]= 255
          	im_color[th_bool]=(255,255,0)
 	 elif _min == None:
-		print 20
 		th_bool=(im <= _max)
          	im_gray[th_bool]= 255
          	im_color[th_bool]=(255,255,0)
 	 	
 	 else :
-		print _min,_max
 		th_bool=(im >= _min)&(im <= _max)
          	im_gray[th_bool]= 255
          	im_color[th_bool]=(0,255,0)
@@ -198,8 +195,6 @@ if __name__ == '__main__':
 	_dir = os.path.abspath(__file__)
 	name = '*.jpg'
 	print a.get_pic_names(name,_dir)
-
-
 
 	color,im0,add,im_UV0,im_1,im_UV,im_UV3,UV_mask,color_final,all_2,im_2  =a.open_files()
 	

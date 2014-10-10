@@ -13,6 +13,9 @@ class Ui_Qt_CV_MainWindow(object):
     def setupUi(self, Qt_CV_MainWindow):
         Qt_CV_MainWindow.setObjectName("Qt_CV_MainWindow")
         Qt_CV_MainWindow.resize(623, 684)
+        undoicon = QtGui.QIcon.fromTheme("edit-undo")
+	Qt_CV_MainWindow.setWindowIcon(QtGui.QIcon(undoicon))
+
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
