@@ -2,7 +2,7 @@
 from __future__ import with_statement
 import cv2
 import os
-import matplotlib.pyplot as plt
+
 import numpy as np
 import glob
 import re
@@ -36,38 +36,63 @@ class pic_count:
     	return bak
 
  def all_contour(self,im):
-	contours,hierarch =cv2.findContours(im,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+	contours,hierarch =cv2.findContours(im,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
         mask = np.zeros((im.shape[0],im.shape[1]),np.uint8)
-	all_ =[]
 	all_num =[]
 	all_cnt =[]
 	i = 0
+	all_cnt_area = []
         for h,cnt in enumerate(contours):
 		area = cv2.contourArea(cnt)
-		all_.append(area)
 		if area > self.maxArea:
 			pass
 		elif area < self.minArea:
 			pass
 		else:
+			calc_mask_temp = np.zeros((im.shape[0],im.shape[1]),np.uint8)
+			cv2.drawContours(calc_mask_temp,[cnt],0,255,-1)
+			#print (np.sum(calc_mask_temp)/255)
+			all_cnt_area.append(np.sum(calc_mask_temp)/255)
+
 			cv2.drawContours(mask,[cnt],0,255,-1)
 			all_num.append(i)
 			i += 1
 			all_cnt.append(cnt)
-    	return mask,all_,all_num,all_cnt
- 
- def re_draw_contour(self,im,all_num,all_cnt,erase_num ):
+    	return mask,all_num,all_cnt,all_cnt_area
+  
+ def re_draw_contour(self,im,all_num,all_cnt,all_cnt_area,erase_num ):
 	 erased_mask = np.zeros_like(im)
-	 for h,cnt in zip(all_num,all_cnt):
+	 cnt_area = []
+	 for h,cnt,area in zip(all_num,all_cnt,all_cnt_area):
+		 
 		 if h  not in erase_num :
-			 cv2.drawContours(erased_mask,[cnt],0,(0,255,255),-1)	
-			 #cv2.imshow("",erased_mask)
+			 cv2.drawContours(erased_mask,[cnt],0,(0,255,255),-1)
+			 #print (np.sum(calc_mask_temp)/255)
+			 cnt_area.append(area)
+
+			 #cv2.imshow("",calc_mask_temp)
 			 #cv2.waitKey(0)
 			 #cv2.destroyAllWindows()  
 		 else:
 			 pass
 			 
-	 return erased_mask
+	 return erased_mask, cnt_area
+ def mono_re_draw_contour(self,im,all_num,all_cnt,all_cnt_area,erase_num ):
+	 erased_mask = np.zeros((im.shape[0],im.shape[1]),np.uint8)
+	 cnt_area = []
+	 for h,cnt,area in zip(all_num,all_cnt,all_cnt_area):
+		 if h  not in erase_num :
+			 cv2.drawContours(erased_mask,[cnt],0,255,-1)
+			 #print (np.sum(calc_mask_temp)/255)
+			 cnt_area.append(area)
+
+			 #cv2.imshow("",calc_mask_temp)
+			 #cv2.waitKey(0)
+			 #cv2.destroyAllWindows()  
+		 else:
+			 pass
+			 
+	 return erased_mask, cnt_area
 
  def make_name(self,name = None,i=1):
 	 print name
@@ -143,6 +168,12 @@ class pic_count:
 		 pos_name  = glob.glob(name_ext)
 
 	 return pos_name
+ def FFT(self,imgray):
+
+    F= np.fft.fft2(imgray)
+    F_= np.log(5 + np.fft.fftshift(np.abs(F)))
+    
+    return F_
 
  def open_files(self,dir = None):
 	if dir is not None :
@@ -191,6 +222,7 @@ class pic_count:
 			else:
 				pass
 if __name__ == '__main__':
+	import matplotlib.pyplot as plt
 	a = pic_count()
 	_dir = os.path.abspath(__file__)
 	name = '*.jpg'

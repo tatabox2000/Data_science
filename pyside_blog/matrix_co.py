@@ -1,5 +1,5 @@
 import numpy as np
-from matplotlib import pylab as plt
+
 import cv2
 from PIL import Image as pil
 
@@ -33,19 +33,54 @@ class coordinateForCv:
 	index = np.where(cv_pic_coor==255)
 	return index
 
+ def check_edge(self,im,all_num,all_cnt,all_cnt_area):
+	edge_num=[]
+	edge_cnt=[]
+	edge_area=[]
+	no_edge_all_num =[]
+	no_edge_all_cnt =[]
+	no_edge_all_area=[]
+	bottom = im.shape[0]
+	right = im.shape[1]
+	edge =np.zeros((im.shape[0],im.shape[1]),np.uint8)
+	edge[:,0:2] =255
+	edge[:,right-2:right] =255
+	edge[0:2,:] =255
+	edge[bottom-2:bottom,:] =255
+	edge_bool = (edge > 254)
+	
+	for h,cnt,area in zip(all_num,all_cnt,all_cnt_area):
+		area_mask = np.zeros((im.shape[0],im.shape[1]),np.uint8)
+		cv2.drawContours(area_mask,[cnt],0,255,-1)
+		#area_mask2 = area_mask - edge
+		area_mask[edge_bool] = 0
+		cnt_edge= np.sum(area_mask)/255
+
+		if area > cnt_edge:
+			edge_num.append(h)
+			edge_cnt.append(cnt)
+			edge_area.append(area)
+		elif area == cnt_edge :
+			no_edge_all_num.append(h)
+			no_edge_all_cnt.append(cnt)
+			no_edge_all_area.append(area)
+	
+	return no_edge_all_num,no_edge_all_cnt,no_edge_all_area,edge_num,edge_cnt,edge_area
+	print len(no_edge_all_num),len(edge_cnt)
  def contour_data(self,cnt):
 	leftmost = tuple(cnt[cnt[:,:,0].argmin()][0])
 	rightmost = tuple(cnt[cnt[:,:,0].argmax()][0])
 	topmost = tuple(cnt[cnt[:,:,1].argmin()][0])
 	bottommost = tuple(cnt[cnt[:,:,1].argmax()][0])
-	left_top = (topmost[0],leftmost[1])
-	right_top = (topmost[0],rightmost[1])
-	right_bottom = (bottommost[0],rightmost[1])
-	left_bottom  = (bottommost[0],leftmost[1])
+	left_top = (topmost[1],leftmost[0])
+	right_top = (topmost[1],rightmost[0])
+	right_bottom = (bottommost[1],rightmost[0])
+	left_bottom  = (bottommost[1],leftmost[0])
 	#cut_area = [topmost[0]:bottommost[0],leftmost[1]:rightmost[1]]
 	return topmost[1],bottommost[1],leftmost[0],rightmost[0]
 
 if __name__ == '__main__':
+	from matplotlib import pylab as plt
 	file = "lena.jpg"
 	a = coordinateForCv()
 	im = a.cv2open(file)
