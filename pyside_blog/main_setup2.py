@@ -357,6 +357,18 @@ SIGNAL("clicked()"), self.select_folder)
 	 self.open_or_add_pic(self.pyqt_pic,self.all_mask,0.7,0.7)
  	 self.make_histogram()
 	 self.all_con = self.add
+ def sub_window_pic(self):
+	self.sub_vb = self.sub_view.addViewBox(enableMenu=False)
+	self.sub_vb.setAspectLocked(True)
+
+	self.sub_item = pg.ImageItem()
+	self.sub_vb.addItem(self.sub_item)
+	coor = coordinateForCv()
+	self.pyqt_imgray = coor.cv2pyqtgraph(self.im)
+	self.sub_item.setImage(self.pyqt_imgray)
+
+
+
 
  def open_or_add_pic(self,pic1=None,pic2=None,weight1=1,weight2=0.5):
 	 self.pic_item = pg.ImageItem()
@@ -417,7 +429,8 @@ SIGNAL("clicked()"), self.select_folder)
        			color = self.setCurrentIndex()
 			count = pic_count()
 			self.imgray = count.color_filter(self.im,color)
-			cv2.cvtColor(self.im,cv2.COLOR_BGR2GRAY)
+			self.sub_window_pic()
+			
 		else:
 			self.imgray = self.im
 		coor = coordinateForCv()
