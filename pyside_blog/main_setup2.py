@@ -62,7 +62,8 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
 	QtCore.QObject.connect(self.exec_button,QtCore.SIGNAL("clicked()"),self.make_canny)
 	self.init_var()
 	self.pic_item = None
-	self.imgray = None 
+	self.imgray = None
+	self.sub_vb = None
 	self.vb = None
 	self.pyqt_pic =None
 	self.plt1 = None
@@ -93,6 +94,7 @@ SIGNAL("clicked()"), self.select_folder)
 	QtCore.QObject.connect(self.min_area_edit, QtCore.SIGNAL("textEdited(const QString&)"), self.change_min_area_edit)
 	QtCore.QObject.connect( self.color_combo, QtCore.SIGNAL('activated(int)'), self.setCurrentIndex)
 	QtCore.QObject.connect( self.color_combo, QtCore.SIGNAL('activated(int)'), self.setCurrentIndex)
+	QtCore.QObject.connect( self.smooth_combo, QtCore.SIGNAL('activated(int)'), self.setsmooth)
 	#QtCore.QObject.connect(self.threshold1_edit, QtCore.SIGNAL("textEdited(const QString&)"), self.change_text)
 	
         self.pic_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -120,8 +122,22 @@ SIGNAL("clicked()"), self.select_folder)
 	if self.color_combo.currentIndex () == 3:
 		color = 'b'
 		return color
-
-
+ def setsmooth(self):
+	if self.smooth_combo.currentIndex () == 0:
+		smooth = 'None'
+		return smooth
+	if self.smooth_combo.currentIndex () == 1:
+		smooth = 'Bilateral'
+		return smooth
+	if self.smooth_combo.currentIndex () == 2:
+		smooth = 'GaussianBlur'
+		return smooth
+	if self.smooth_combo.currentIndex () == 3:
+		smooth = 'medianBlur'
+		return smooth
+	if self.smooth_combo.currentIndex () == 4:
+		smooth = 'Blur'
+		return smooth
 
 
  def change_max_area_slider(self,value):
@@ -357,18 +373,17 @@ SIGNAL("clicked()"), self.select_folder)
 	 self.open_or_add_pic(self.pyqt_pic,self.all_mask,0.7,0.7)
  	 self.make_histogram()
 	 self.all_con = self.add
- def sub_window_pic(self):
-	self.sub_vb = self.sub_view.addViewBox(enableMenu=False)
+ def sub_window_pic(self,im):
+	if self.sub_vb == None:
+		self.sub_vb = self.sub_view.addViewBox()
+	else:
+		self.sub_vb.clear()
 	self.sub_vb.setAspectLocked(True)
-
 	self.sub_item = pg.ImageItem()
 	self.sub_vb.addItem(self.sub_item)
 	coor = coordinateForCv()
-	self.pyqt_imgray = coor.cv2pyqtgraph(self.im)
+	self.pyqt_imgray = coor.cv2pyqtgraph(im)
 	self.sub_item.setImage(self.pyqt_imgray)
-
-
-
 
  def open_or_add_pic(self,pic1=None,pic2=None,weight1=1,weight2=0.5):
 	 self.pic_item = pg.ImageItem()
@@ -429,8 +444,13 @@ SIGNAL("clicked()"), self.select_folder)
        			color = self.setCurrentIndex()
 			count = pic_count()
 			self.imgray = count.color_filter(self.im,color)
-			self.sub_window_pic()
-			
+			smooth = self.setsmooth()
+			blur = count.smoothing(self.imgray,smooth)
+			self.sub_window_pic(blur)
+			#cv2.imshow("",self.imgray)
+			#cv2.waitKey(0)
+			#cv2.destroyAllWindows()
+
 		else:
 			self.imgray = self.im
 		coor = coordinateForCv()

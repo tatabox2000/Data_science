@@ -108,25 +108,45 @@ class pic_count:
 		 return im
 	 elif color == 'gray':
 		 imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
-		 print 'gray'
 		 return imgray
 	 elif color == 'r' :
 		 select_color = np.zeros((im.shape[0],im.shape[1]),np.uint8)
 		 select_color[:,:] = im[:,:,2]
-		 print 'red'
 		 return select_color
 	 elif color == 'g' :
 		 select_color = np.zeros((im.shape[0],im.shape[1]),np.uint8)
 		 select_color[:,:] = im[:,:,1]
-		 print 'green'
 		 return select_color
 
 	 elif color == 'b' :
 		 select_color = np.zeros((im.shape[0],im.shape[1]),np.uint8)
 		 select_color[:,:] = im[:,:,0]
-		 print 'blue'
 		 return select_color
 
+ def smoothing(self,imgray,smooth = 'None'):
+	 if  len(imgray.shape) == 3:
+		 print  'gray scale only'
+		 return
+	 elif smooth == 'None':
+		 return imgray
+	 elif smooth == 'Bilateral' :
+		 blur = cv2.bilateralFilter(imgray,10,20,5)
+		 return blur
+	 elif smooth == 'GaussianBlur' :
+		 blur = cv2.GaussianBlur(imgray,(5,5),0)
+		 return blur
+ 	 elif smooth == 'medianBlur' :
+		 median = cv2.medianBlur(imgray,5)
+		 return median
+	 elif smooth == 'Blur' :
+		 blur = cv2.blur(imgray,(5,5))
+		 return blur
+
+	 elif smooth == 'b' :
+		 select_color = np.zeros((im.shape[0],im.shape[1]),np.uint8)
+		 select_color[:,:] = im[:,:,0]
+		 print 'blue'
+		 return select_color
  def gray_range_select(self,im,_min=None,_max=None):
 	 im_gray,im_color =self.picture_make(im)
  	 if _max == None:
@@ -204,7 +224,6 @@ class pic_count:
 				imgray,color = self.gray_range_select(red_pic ,self.min_number )
 				color_final = color.copy() 
 
-				bila_UV=cv2.bilateralFilter(im_UV,10,20,5)
 				th_UV,im_UV3 = self.gray_range_select(bila_UV,self.smallRange,self.largeRange )
 				imgray_mask,all_1,self.all_num1,self.all_cnt1 = self.picture_mask(imgray)
 				UV_mask,all_2,self.all_num1,self.all_cnt1 = self.picture_mask(th_UV)
