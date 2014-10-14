@@ -65,9 +65,12 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
 	self.imgray = None 
 	self.vb = None
 	self.pyqt_pic =None
-
+	self.plt1 = None
 	self.largeRange = int(self.threshold1_edit.text())
 	self.smallRange = int(self.threshold2_edit.text())
+	self.maxArea =int(self.max_area_edit.text())
+	self.minArea =int(self.min_area_edit.text())
+
 	undoicon = QtGui.QIcon.fromTheme("edit-undo")
 	#print undoicon
 	#self.centralwidget.setWindowIcon(QtGui.QIcon(undoicon))
@@ -84,13 +87,17 @@ SIGNAL("clicked()"), self.select_folder)
 	QtCore.QObject.connect(self.threshold2_slider, QtCore.SIGNAL("valueChanged(int)"), self.change_threshold2_slider)
 	QtCore.QObject.connect(self.threshold1_edit, QtCore.SIGNAL("textEdited(const QString&)"), self.change_threshold1_edit)
 	QtCore.QObject.connect(self.threshold2_edit, QtCore.SIGNAL("textEdited(const QString&)"), self.change_threshold2_edit)
-
+	QtCore.QObject.connect(self.max_area_slider, QtCore.SIGNAL("valueChanged(int)"), self.change_max_area_slider)
+	QtCore.QObject.connect(self.min_area_slider, QtCore.SIGNAL("valueChanged(int)"), self.change_min_area_slider)
+	QtCore.QObject.connect(self.max_area_edit, QtCore.SIGNAL("textEdited(const QString&)"), self.change_max_area_edit)
+	QtCore.QObject.connect(self.min_area_edit, QtCore.SIGNAL("textEdited(const QString&)"), self.change_min_area_edit)
+	QtCore.QObject.connect( self.color_combo, QtCore.SIGNAL('activated(int)'), self.setCurrentIndex)
+	QtCore.QObject.connect( self.color_combo, QtCore.SIGNAL('activated(int)'), self.setCurrentIndex)
 	#QtCore.QObject.connect(self.threshold1_edit, QtCore.SIGNAL("textEdited(const QString&)"), self.change_text)
 	
         self.pic_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.pic_view.customContextMenuRequested.connect(self.contextMenue) 
 	self.pic_view.installEventFilter(self)
-	  
 	self.pic_view.setHorizontalScrollBarPolicy( QtCore.Qt.ScrollBarAlwaysOff )
 	self.pic_view.setVerticalScrollBarPolicy( QtCore.Qt.ScrollBarAlwaysOff )
 	#self.pic_item = QtGui.QGraphicsPixmapItem()
@@ -98,14 +105,41 @@ SIGNAL("clicked()"), self.select_folder)
 	self.pic_view.setResizeAnchor(QtGui.QGraphicsView.NoAnchor)
 	self.eject_edge_or_not.stateChanged.connect(self.all_drowcontour)
 	#self.form_view_or_image.stateChanged.connect(self.open_or_add_pic)
-	
+ def setCurrentIndex(self):
+	if self.color_combo.currentIndex () == 0:
+		color = 'gray'
+		return color
+	if self.color_combo.currentIndex () == 1:
+		color = 'r'
+		return color
+
+	if self.color_combo.currentIndex () == 2:
+		color = 'g'
+		return color
+
+	if self.color_combo.currentIndex () == 3:
+		color = 'b'
+		return color
+
+
+
+
+ def change_max_area_slider(self,value):
+	self.max_area_edit.setText(str(value))
+	self.maxArea = int(value)
+	if self.imgray is None :
+		pass
+	else:
+		self.all_drowcontour()
+
+
+
  def View_or_Image(self):
 	if self.form_view_or_image.isChecked():
 		self.adjust_view()
 	else:
 		self.adjust_pic()
  def init_var(self):
-	self.plt1 = None
 	self.all_cnt_area =None
 	self.all_cnt = None
 	self.all_con = None
@@ -143,6 +177,7 @@ SIGNAL("clicked()"), self.select_folder)
 		 vals = self.cur_contour_area
 	 if self.plt1 == None:
 		 self.plt1 = self.hist_view.plotItem
+		 #self.plt1.clear()
 	 else:
 		 self.plt1.clear()
 	 self.plt1.hideAxis('left')
@@ -154,47 +189,6 @@ SIGNAL("clicked()"), self.select_folder)
 	 curve.rotate(90)
 	 self.plt1.addItem(curve)
 
- def change_threshold1_slider(self,value):
-	self.threshold1_edit.setText(str(value))
-	self.largeRange = int(value)
-	if self.imgray is None :
-		pass
-	else:
-		self.all_drowcontour()
-
- def change_threshold2_slider(self,value):
-	self.threshold2_edit.setText(str(value))
-	self.smallRange = int(value)
-	if self.imgray is None :
-		pass
-	else:
-		self.all_drowcontour()
-
- def change_threshold1_edit(self,value):
-	if self.threshold1_edit.text() is '':
-		self.threshold1_slider.setValue(0)
-		self.smallRange = 0
-
-	else:
-		self.threshold1_slider.setValue(int(self.threshold1_edit.text()))
-		self.largeRange =int(self.threshold1_edit.text())
-		if self.imgray is None :
-			pass
-		else:
-			self.all_drowcontour()
-
-		self.all_drowcontour()
- def change_threshold2_edit(self,value):
-	if self.threshold2_edit.text() is '':
-		self.threshold2_slider.setValue(0)
-		self.smallRange = 0
-	else:
-	 	self.threshold2_slider.setValue(int(self.threshold2_edit.text()))
-		self.smallRange = int(self.threshold1_edit.text())
-		if self.imgray is None :
-			pass
-		else:
-			self.all_drowcontour()
  
  def erase_area(self):
 	 self.erase_num.append(self.cur_cnt_number)
@@ -349,19 +343,11 @@ SIGNAL("clicked()"), self.select_folder)
 	 cv2.waitKey(0)
 	 cv2.destroyAllWindows() 
 	 """
-	 imgray_mask,self.all_num,self.all_cnt,self.all_cnt_area = count.all_contour(imgray)	  
-	 """ 
-	 cv2.imshow("",imgray_mask)
-	 cv2.waitKey(0)
-	 cv2.destroyAllWindows() 
-	 """
+	 imgray_mask,self.all_num,self.all_cnt,self.all_cnt_area = count.all_contour(imgray,self.maxArea,self.minArea)	  
+
 	 
 	 imgray_mask,self.all_cnt_area = self.chack_edge()
-	 """
-	 cv2.imshow("",imgray_mask)
-	 cv2.waitKey(0)
-	 cv2.destroyAllWindows() 
-	 """
+
 	 coor = coordinateForCv()
 	 self.cv_img = coor.cv2pyqtgraph(imgray_mask)
 	 
@@ -409,14 +395,12 @@ SIGNAL("clicked()"), self.select_folder)
 		if event.button() == QtCore.Qt.LeftButton:
 			if self.all_con is None :
 				pass
-
 			else :
 				self.pic_item.setImage(self.all_con)
 	
 	return QtGui.QWidget.eventFilter(self, source, event)
  def open_file(self):
 	self.init_var()
-
 	self.filename = QtGui.QFileDialog.getOpenFileName(self,filter="Image Files (*.png *.bmp *jpg)")
         if self.filename is not None:
 		if self.pic_item is not None:
@@ -430,7 +414,10 @@ SIGNAL("clicked()"), self.select_folder)
 		self.last_dir = os.path.dirname(unicode(self.filename))
 
 		if len(self.im.shape) == 3:
-			self.imgray = cv2.cvtColor(self.im,cv2.COLOR_BGR2GRAY)
+       			color = self.setCurrentIndex()
+			count = pic_count()
+			self.imgray = count.color_filter(self.im,color)
+			cv2.cvtColor(self.im,cv2.COLOR_BGR2GRAY)
 		else:
 			self.imgray = self.im
 		coor = coordinateForCv()
@@ -499,6 +486,80 @@ SIGNAL("clicked()"), self.select_folder)
         folder = QtGui.QFileDialog.getExistingDirectory(self,'Open Dorectory',os.path.expanduser('~'))
         if folder:
             self.folder_edit.setText(folder)
+
+ def change_min_area_slider(self,value):
+	self.min_area_edit.setText(str(value))
+	self.minArea = int(value)
+	if self.imgray is None :
+		pass
+	else:
+		self.all_drowcontour()
+
+ def change_max_area_edit(self,value):
+	if self.max_area_edit.text() is '':
+		self.max_area_slider.setValue(0)
+		self.maxArea = 0
+
+	else:
+		self.max_area_slider.setValue(int(self.max_area_edit.text()))
+		self.maxArea=int(self.max_area_edit.text())
+		if self.imgray is None :
+			pass
+		else:
+			self.all_drowcontour()
+ def change_min_area_edit(self,value):
+	if self.min_area_edit.text() is '':
+		self.min_area_slider.setValue(0)
+		self.minArea = 0
+
+	else:
+		self.min_area_slider.setValue(int(self.min_area_edit.text()))
+		self.minArea=int(self.min_area_edit.text())
+		if self.imgray is None :
+			pass
+		else:
+			self.all_drowcontour()
+ def change_threshold1_slider(self,value):
+	self.threshold1_edit.setText(str(value))
+	self.largeRange = int(value)
+	if self.imgray is None :
+		pass
+	else:
+		self.all_drowcontour()
+
+ def change_threshold2_slider(self,value):
+	self.threshold2_edit.setText(str(value))
+	self.smallRange = int(value)
+	if self.imgray is None :
+		pass
+	else:
+		self.all_drowcontour()
+
+ def change_threshold1_edit(self,value):
+	if self.threshold1_edit.text() is '':
+		self.threshold1_slider.setValue(0)
+		self.smallRange = 0
+
+	else:
+		self.threshold1_slider.setValue(int(self.threshold1_edit.text()))
+		self.largeRange =int(self.threshold1_edit.text())
+		if self.imgray is None :
+			pass
+		else:
+			self.all_drowcontour()
+
+		self.all_drowcontour()
+ def change_threshold2_edit(self,value):
+	if self.threshold2_edit.text() is '':
+		self.threshold2_slider.setValue(0)
+		self.smallRange = 0
+	else:
+	 	self.threshold2_slider.setValue(int(self.threshold2_edit.text()))
+		self.smallRange = int(self.threshold1_edit.text())
+		if self.imgray is None :
+			pass
+		else:
+			self.all_drowcontour()
 
 
  """ 

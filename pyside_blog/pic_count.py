@@ -35,7 +35,7 @@ class pic_count:
         	i = i+2
     	return bak
 
- def all_contour(self,im):
+ def all_contour(self,im,maxArea,minArea):
 	contours,hierarch =cv2.findContours(im,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
         mask = np.zeros((im.shape[0],im.shape[1]),np.uint8)
 	all_num =[]
@@ -44,9 +44,9 @@ class pic_count:
 	all_cnt_area = []
         for h,cnt in enumerate(contours):
 		area = cv2.contourArea(cnt)
-		if area > self.maxArea:
+		if area > maxArea:
 			pass
-		elif area < self.minArea:
+		elif area < minArea:
 			pass
 		else:
 			calc_mask_temp = np.zeros((im.shape[0],im.shape[1]),np.uint8)
@@ -95,7 +95,6 @@ class pic_count:
 	 return erased_mask, cnt_area
 
  def make_name(self,name = None,i=1):
-	 print name
 	 name4,name5 =re.split(r'\\',name)
          name6 = name4 + '_' + str(i)
          name7 = name6 + '_mask'
@@ -107,18 +106,25 @@ class pic_count:
  def color_filter(self,im,color = 'r'):
 	 if  len(im.shape) == 2:
 		 return im
+	 elif color == 'gray':
+		 imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+		 print 'gray'
+		 return imgray
 	 elif color == 'r' :
 		 select_color = np.zeros((im.shape[0],im.shape[1]),np.uint8)
 		 select_color[:,:] = im[:,:,2]
+		 print 'red'
 		 return select_color
 	 elif color == 'g' :
 		 select_color = np.zeros((im.shape[0],im.shape[1]),np.uint8)
 		 select_color[:,:] = im[:,:,1]
+		 print 'green'
 		 return select_color
 
 	 elif color == 'b' :
 		 select_color = np.zeros((im.shape[0],im.shape[1]),np.uint8)
-		 select_color[:,:] = im[:,:,1]
+		 select_color[:,:] = im[:,:,0]
+		 print 'blue'
 		 return select_color
 
  def gray_range_select(self,im,_min=None,_max=None):
