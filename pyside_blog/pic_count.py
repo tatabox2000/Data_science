@@ -117,7 +117,6 @@ class pic_count:
 		 select_color = np.zeros((im.shape[0],im.shape[1]),np.uint8)
 		 select_color[:,:] = im[:,:,1]
 		 return select_color
-
 	 elif color == 'b' :
 		 select_color = np.zeros((im.shape[0],im.shape[1]),np.uint8)
 		 select_color[:,:] = im[:,:,0]
@@ -142,11 +141,7 @@ class pic_count:
 		 blur = cv2.blur(imgray,(5,5))
 		 return blur
 
-	 elif smooth == 'b' :
-		 select_color = np.zeros((im.shape[0],im.shape[1]),np.uint8)
-		 select_color[:,:] = im[:,:,0]
-		 print 'blue'
-		 return select_color
+
  def gray_range_select(self,im,_min=None,_max=None):
 	 im_gray,im_color =self.picture_make(im)
  	 if _max == None:
@@ -156,8 +151,7 @@ class pic_count:
 	 elif _min == None:
 		th_bool=(im <= _max)
          	im_gray[th_bool]= 255
-         	im_color[th_bool]=(255,255,0)
-	 	
+         	im_color[th_bool]=(255,255,0)	
 	 else :
 		th_bool=(im >= _min)&(im <= _max)
          	im_gray[th_bool]= 255
@@ -192,8 +186,10 @@ class pic_count:
 		 name_ext = dir + '\\' + name_ext
 		 print name_ext
 		 pos_name  = glob.glob(name_ext)
-
 	 return pos_name
+ 
+
+
  def FFT(self,imgray):
 
     F= np.fft.fft2(imgray)

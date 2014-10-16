@@ -49,14 +49,11 @@ class CustomPlotItem(pg.ImageItem):
         print("hover")
         ev.acceptDrags(QtCore.Qt.LeftButton)
 
-	
-
 class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
  def __init__(self, parent = None):
         super(DesignerMainWindow, self).__init__(parent)
        	self.ui = Ui_Qt_CV_MainWindow()
 	self.setupUi(self)
-
 	
 	QtCore.QObject.connect(self.file_button, QtCore.SIGNAL("clicked()"), self.open_file)
 	QtCore.QObject.connect(self.exec_button,QtCore.SIGNAL("clicked()"),self.make_canny)
@@ -106,10 +103,16 @@ SIGNAL("clicked()"), self.select_folder)
 	self.pic_view.setTransformationAnchor( QtGui.QGraphicsView.NoAnchor )
 	self.pic_view.setResizeAnchor(QtGui.QGraphicsView.NoAnchor)
 	self.eject_edge_or_not.stateChanged.connect(self.all_drowcontour)
+	self.file_scrollbar.valueChanged.connect(self.cur_position)
+
 	#self.form_view_or_image.stateChanged.connect(self.open_or_add_pic)
+
+ def cur_position(self):
+	 print 'scrollbar'
+
+
  def setCurrentIndex(self):
 	if self.color_combo.currentIndex () == 0:
-		color = 'gray'
 		return color
 	if self.color_combo.currentIndex () == 1:
 		color = 'r'
@@ -139,7 +142,6 @@ SIGNAL("clicked()"), self.select_folder)
 		smooth = 'Blur'
 		return smooth
 
-
  def change_max_area_slider(self,value):
 	self.max_area_edit.setText(str(value))
 	self.maxArea = int(value)
@@ -147,8 +149,6 @@ SIGNAL("clicked()"), self.select_folder)
 		pass
 	else:
 		self.all_drowcontour()
-
-
 
  def View_or_Image(self):
 	if self.form_view_or_image.isChecked():
@@ -363,7 +363,6 @@ SIGNAL("clicked()"), self.select_folder)
 
 	 
 	 imgray_mask,self.all_cnt_area = self.chack_edge()
-
 	 coor = coordinateForCv()
 	 self.cv_img = coor.cv2pyqtgraph(imgray_mask)
 	 
@@ -426,6 +425,14 @@ SIGNAL("clicked()"), self.select_folder)
 				self.pic_item.setImage(self.all_con)
 	
 	return QtGui.QWidget.eventFilter(self, source, event)
+ def scrollbar_set(self,files_len,filename_pos):
+	self.file_scrollbar.valueChanged.connect(self.cur_position)
+	self.file_scrollbar.setProperty("value", files_len)
+	self.file_scrollbar.setValue(filename_pos)
+	self.file_scrollbar.setMaximum(files_len)
+
+
+ 	
  def open_file(self):
 	self.init_var()
 	self.filename = QtGui.QFileDialog.getOpenFileName(self,filter="Image Files (*.png *.bmp *jpg)")
@@ -464,8 +471,11 @@ SIGNAL("clicked()"), self.select_folder)
 			pass
 		self.open_or_add_pic(self.pyqt_pic)
 		self.pic_view.scene().sigMouseClicked.connect(self.mouseMoved)
+		
 
-		return file
+		namelist, files_len, filename_pos = coor.get_list_and_index(self.filename[0])
+		self.scrollbar_set( files_len, filename_pos)
+
  def mouseReleased(self,event):
 	 #QtGui.qApp.restoreOverrideCursor()
 	 self.update()

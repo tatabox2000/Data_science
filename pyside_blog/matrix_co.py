@@ -1,8 +1,8 @@
 import numpy as np
-
+import os 
 import cv2
 from PIL import Image as pil
-
+import glob
 class coordinateForCv:
  def __init_(self,parent=None):        
 	self.pyqt_pic = None
@@ -32,6 +32,23 @@ class coordinateForCv:
 	cv_pic_coor = np.asarray(im_pil_rotate)
 	index = np.where(cv_pic_coor==255)
 	return index
+
+ def get_list_and_index(self,filename):
+	 print filename
+	 root, ext = os.path.splitext(filename)
+	 dirname  = os.path.dirname(filename)
+	 name  = os.path.basename(filename)
+
+	 search_name = dirname + u'/*' + ext
+	 rep = '/' + name
+	 rep_to = '\\' + name
+	 filename2 = filename.replace(rep,rep_to)
+	 namelist = glob.glob(search_name)
+	 files_len = len(namelist)
+	 filename_pos = namelist.index(filename2)
+
+	 return namelist,files_len,filename_pos
+ 
 
  def check_edge(self,im,all_num,all_cnt,all_cnt_area):
 	edge_num=[]
@@ -67,6 +84,7 @@ class coordinateForCv:
 	
 	return no_edge_all_num,no_edge_all_cnt,no_edge_all_area,edge_num,edge_cnt,edge_area
 	print len(no_edge_all_num),len(edge_cnt)
+
  def contour_data(self,cnt):
 	leftmost = tuple(cnt[cnt[:,:,0].argmin()][0])
 	rightmost = tuple(cnt[cnt[:,:,0].argmax()][0])
