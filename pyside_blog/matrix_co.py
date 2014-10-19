@@ -44,13 +44,13 @@ class coordinateForCv:
 	 rep_to = '\\' + name
 	 filename2 = filename.replace(rep,rep_to)
 	 namelist = glob.glob(search_name)
-	 files_len = len(namelist)
+	 files_len = len(namelist) - 1
 	 filename_pos = namelist.index(filename2)
 
 	 return namelist,files_len,filename_pos
  
 
- def check_edge(self,im,all_num,all_cnt,all_cnt_area):
+ def check_edge(self,im,all_num,all_cnt,all_cnt_area,edge_pix=2):
 	edge_num=[]
 	edge_cnt=[]
 	edge_area=[]
@@ -60,10 +60,10 @@ class coordinateForCv:
 	bottom = im.shape[0]
 	right = im.shape[1]
 	edge =np.zeros((im.shape[0],im.shape[1]),np.uint8)
-	edge[:,0:2] =255
-	edge[:,right-2:right] =255
-	edge[0:2,:] =255
-	edge[bottom-2:bottom,:] =255
+	edge[:,0:edge_pix] =255
+	edge[:,right-edge_pix:right] =255
+	edge[0:edge_pix,:] =255
+	edge[bottom-edge_pix:bottom,:] =255
 	edge_bool = (edge > 254)
 	
 	for h,cnt,area in zip(all_num,all_cnt,all_cnt_area):
@@ -96,6 +96,36 @@ class coordinateForCv:
 	left_bottom  = (bottommost[1],leftmost[0])
 	#cut_area = [topmost[0]:bottommost[0],leftmost[1]:rightmost[1]]
 	return topmost[1],bottommost[1],leftmost[0],rightmost[0]
+ def eba_calc(self,all_num,all_cnt,all_cnt_area,imgray_mask,imgray):
+	no_edge_all_num,no_edge_all_cnt,no_edge_all_area,edge_num,edge_cnt,edge_area = self.check_edge(imgray_mask,all_num,all_cnt,all_cnt_area,10)
+	for num,cnt in zip(no_edge_all_num,no_edge_all_cnt):
+
+		list_num = self.coordinate_of_cnt(cnt,imgray,num)
+		#topmost[1],bottommost[1],leftmost[0],rightmost[0]=self.contour_data(cnt)
+		imgray_mask_bool = imgray_mask == 255
+
+		for x,y,num in list_num:
+			xstart = x - 10
+			xend   = x + 10
+			ystart = y - 10
+			yend   = y + 10
+		pass
+ def coordinate_of_cnt(self,cnt,imgray,num):
+	 coordinate_list=[]
+	 y = imgray.shape[0]
+	 x = imgray.shape[1]
+	 area_mask = np.zeros((y,x),np.uint8)
+	 cv2.drawContours(area_mask,[cnt],0,255,-1)
+	 for x in np.arange(0,x,1):
+		 for y in np.arange(0,y,1):
+			if (area_mask[y,x] ==255):
+				coordinate_list.append((x,y,num))
+			else:
+				pass
+	 print coordinate_list
+	 return coordinate_list
+
+	 
 
 if __name__ == '__main__':
 	from matplotlib import pylab as plt

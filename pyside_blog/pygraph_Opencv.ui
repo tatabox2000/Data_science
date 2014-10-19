@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1064</width>
-    <height>743</height>
+    <width>1076</width>
+    <height>774</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -51,8 +51,8 @@
    <widget class="GraphicsLayoutWidget" name="pic_view">
     <property name="geometry">
      <rect>
-      <x>520</x>
-      <y>170</y>
+      <x>519</x>
+      <y>180</y>
       <width>512</width>
       <height>512</height>
      </rect>
@@ -67,7 +67,7 @@
       <x>730</x>
       <y>0</y>
       <width>81</width>
-      <height>51</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -84,7 +84,7 @@
     <property name="geometry">
      <rect>
       <x>400</x>
-      <y>130</y>
+      <y>140</y>
       <width>411</width>
       <height>31</height>
      </rect>
@@ -135,9 +135,9 @@
    <widget class="PlotWidget" name="hist_view">
     <property name="geometry">
      <rect>
-      <x>400</x>
-      <y>170</y>
-      <width>111</width>
+      <x>397</x>
+      <y>180</y>
+      <width>121</width>
       <height>511</height>
      </rect>
     </property>
@@ -744,7 +744,7 @@
      </font>
     </property>
     <property name="text">
-     <string>μ㎡/pix　[Plese Enter this number]</string>
+     <string>μ㎡/pix　[Enter this number]</string>
     </property>
    </widget>
    <widget class="GraphicsLayoutWidget" name="sub_view">
@@ -753,8 +753,27 @@
       <x>830</x>
       <y>0</y>
       <width>201</width>
-      <height>161</height>
+      <height>181</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="EBA_button">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>40</y>
+      <width>81</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="text">
+     <string>EBA</string>
     </property>
    </widget>
   </widget>
@@ -763,7 +782,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1064</width>
+     <width>1076</width>
      <height>29</height>
     </rect>
    </property>

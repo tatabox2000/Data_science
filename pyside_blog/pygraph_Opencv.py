@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pygraph_Opencv.ui'
 #
-# Created: Wed Oct 15 00:30:01 2014
+# Created: Sun Oct 19 22:01:33 2014
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_Qt_CV_MainWindow(object):
     def setupUi(self, Qt_CV_MainWindow):
         Qt_CV_MainWindow.setObjectName("Qt_CV_MainWindow")
-        Qt_CV_MainWindow.resize(1064, 743)
+        Qt_CV_MainWindow.resize(1076, 774)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -35,11 +35,11 @@ class Ui_Qt_CV_MainWindow(object):
         self.file_button.setObjectName("file_button")
         self.horizontalLayout.addWidget(self.file_button)
         self.pic_view = GraphicsLayoutWidget(self.centralwidget)
-        self.pic_view.setGeometry(QtCore.QRect(520, 170, 512, 512))
+        self.pic_view.setGeometry(QtCore.QRect(519, 180, 512, 512))
         self.pic_view.setViewportUpdateMode(QtGui.QGraphicsView.FullViewportUpdate)
         self.pic_view.setObjectName("pic_view")
         self.exec_button = QtGui.QPushButton(self.centralwidget)
-        self.exec_button.setGeometry(QtCore.QRect(730, 0, 81, 51))
+        self.exec_button.setGeometry(QtCore.QRect(730, 0, 81, 31))
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -47,7 +47,7 @@ class Ui_Qt_CV_MainWindow(object):
         self.exec_button.setSizePolicy(sizePolicy)
         self.exec_button.setObjectName("exec_button")
         self.file_scrollbar = QtGui.QScrollBar(self.centralwidget)
-        self.file_scrollbar.setGeometry(QtCore.QRect(400, 130, 411, 31))
+        self.file_scrollbar.setGeometry(QtCore.QRect(400, 140, 411, 31))
         self.file_scrollbar.setProperty("value", 50)
         self.file_scrollbar.setOrientation(QtCore.Qt.Horizontal)
         self.file_scrollbar.setObjectName("file_scrollbar")
@@ -70,7 +70,7 @@ class Ui_Qt_CV_MainWindow(object):
         self.label_2.setObjectName("label_2")
         self.verticalLayout.addWidget(self.label_2)
         self.hist_view = PlotWidget(self.centralwidget)
-        self.hist_view.setGeometry(QtCore.QRect(400, 170, 111, 511))
+        self.hist_view.setGeometry(QtCore.QRect(397, 180, 121, 511))
         self.hist_view.setObjectName("hist_view")
         self.line = QtGui.QFrame(self.centralwidget)
         self.line.setGeometry(QtCore.QRect(0, 240, 391, 16))
@@ -297,11 +297,19 @@ class Ui_Qt_CV_MainWindow(object):
         self.label_13.setFont(font)
         self.label_13.setObjectName("label_13")
         self.sub_view = GraphicsLayoutWidget(self.centralwidget)
-        self.sub_view.setGeometry(QtCore.QRect(830, 0, 201, 161))
+        self.sub_view.setGeometry(QtCore.QRect(830, 0, 201, 181))
         self.sub_view.setObjectName("sub_view")
+        self.EBA_button = QtGui.QPushButton(self.centralwidget)
+        self.EBA_button.setGeometry(QtCore.QRect(730, 40, 81, 31))
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.EBA_button.sizePolicy().hasHeightForWidth())
+        self.EBA_button.setSizePolicy(sizePolicy)
+        self.EBA_button.setObjectName("EBA_button")
         Qt_CV_MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(Qt_CV_MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1064, 29))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1076, 29))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtGui.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -352,7 +360,8 @@ class Ui_Qt_CV_MainWindow(object):
         self.max_area_edit.setText(QtGui.QApplication.translate("Qt_CV_MainWindow", "5000", None, QtGui.QApplication.UnicodeUTF8))
         self.form_view_or_image.setText(QtGui.QApplication.translate("Qt_CV_MainWindow", "Adjust View from Image", None, QtGui.QApplication.UnicodeUTF8))
         self.threshold1_edit_2.setText(QtGui.QApplication.translate("Qt_CV_MainWindow", "9", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_13.setText(QtGui.QApplication.translate("Qt_CV_MainWindow", "μ㎡/pix　[Plese Enter this number]", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_13.setText(QtGui.QApplication.translate("Qt_CV_MainWindow", "μ㎡/pix　[Enter this number]", None, QtGui.QApplication.UnicodeUTF8))
+        self.EBA_button.setText(QtGui.QApplication.translate("Qt_CV_MainWindow", "EBA", None, QtGui.QApplication.UnicodeUTF8))
         self.menuFile.setTitle(QtGui.QApplication.translate("Qt_CV_MainWindow", "File", None, QtGui.QApplication.UnicodeUTF8))
         self.actionQuit.setText(QtGui.QApplication.translate("Qt_CV_MainWindow", "Quit", None, QtGui.QApplication.UnicodeUTF8))
 

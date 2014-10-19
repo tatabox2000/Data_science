@@ -55,8 +55,10 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
        	self.ui = Ui_Qt_CV_MainWindow()
 	self.setupUi(self)
 	
-	QtCore.QObject.connect(self.file_button, QtCore.SIGNAL("clicked()"), self.open_file)
+	QtCore.QObject.connect(self.file_button, QtCore.SIGNAL("clicked()"), self.push_file_button)
 	QtCore.QObject.connect(self.exec_button,QtCore.SIGNAL("clicked()"),self.make_canny)
+	QtCore.QObject.connect(self.EBA_button,QtCore.SIGNAL("clicked()"),self.calc_eba)
+
 	self.init_var()
 	self.pic_item = None
 	self.imgray = None
@@ -68,7 +70,7 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
 	self.smallRange = int(self.threshold2_edit.text())
 	self.maxArea =int(self.max_area_edit.text())
 	self.minArea =int(self.min_area_edit.text())
-
+	self.namelist = None
 	undoicon = QtGui.QIcon.fromTheme("edit-undo")
 	#print undoicon
 	#self.centralwidget.setWindowIcon(QtGui.QIcon(undoicon))
@@ -97,64 +99,31 @@ SIGNAL("clicked()"), self.select_folder)
         self.pic_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.pic_view.customContextMenuRequested.connect(self.contextMenue) 
 	self.pic_view.installEventFilter(self)
-	self.pic_view.setHorizontalScrollBarPolicy( QtCore.Qt.ScrollBarAlwaysOff )
-	self.pic_view.setVerticalScrollBarPolicy( QtCore.Qt.ScrollBarAlwaysOff )
 	#self.pic_item = QtGui.QGraphicsPixmapItem()
 	self.pic_view.setTransformationAnchor( QtGui.QGraphicsView.NoAnchor )
 	self.pic_view.setResizeAnchor(QtGui.QGraphicsView.NoAnchor)
 	self.eject_edge_or_not.stateChanged.connect(self.all_drowcontour)
-	self.file_scrollbar.valueChanged.connect(self.cur_position)
+	#self.file_scrollbar.valueChanged.connect(self.cur_position)
 
 	#self.form_view_or_image.stateChanged.connect(self.open_or_add_pic)
 
+ def calc_eba(self):
+	if self.eject_edge_or_not.isChecked():
+	
+		
+		coor.eba_calc(self.all_num_with_edge,self.all_cnt_with_edge,self.all_cnt_area_with_edge,self.imgray_mask)
+	else:
+		coor = coordinateForCv()
+		coor.eba_calc(self.all_num,self.all_cnt,self.all_cnt_area,self.imgray_mask,self.imgray)
+
  def cur_position(self):
-	 print 'scrollbar'
+	self.vb.clear()
+	self.sub_vb.clear()
+	i =  self.file_scrollbar.value()
+	self.im = cv2.imread(self.namelist[i])
 
+	self.pic_set()
 
- def setCurrentIndex(self):
-	if self.color_combo.currentIndex () == 0:
-		return color
-	if self.color_combo.currentIndex () == 1:
-		color = 'r'
-		return color
-
-	if self.color_combo.currentIndex () == 2:
-		color = 'g'
-		return color
-
-	if self.color_combo.currentIndex () == 3:
-		color = 'b'
-		return color
- def setsmooth(self):
-	if self.smooth_combo.currentIndex () == 0:
-		smooth = 'None'
-		return smooth
-	if self.smooth_combo.currentIndex () == 1:
-		smooth = 'Bilateral'
-		return smooth
-	if self.smooth_combo.currentIndex () == 2:
-		smooth = 'GaussianBlur'
-		return smooth
-	if self.smooth_combo.currentIndex () == 3:
-		smooth = 'medianBlur'
-		return smooth
-	if self.smooth_combo.currentIndex () == 4:
-		smooth = 'Blur'
-		return smooth
-
- def change_max_area_slider(self,value):
-	self.max_area_edit.setText(str(value))
-	self.maxArea = int(value)
-	if self.imgray is None :
-		pass
-	else:
-		self.all_drowcontour()
-
- def View_or_Image(self):
-	if self.form_view_or_image.isChecked():
-		self.adjust_view()
-	else:
-		self.adjust_pic()
  def init_var(self):
 	self.all_cnt_area =None
 	self.all_cnt = None
@@ -164,14 +133,24 @@ SIGNAL("clicked()"), self.select_folder)
 	self.cur_contour_area = None
 	self.erase_num = []
 	self.all_num = None
-	
+	self.all_con = None
 	self.erase_num = []
- def chack_edge(self):
+	self.all_num_with_edge=None
+	self.all_cnt_with_edge=None
+	self.all_area_with_edge=None
+	self.files_len = None
+	self.filename_pos = None
+	self.imgray_mask = None
+ def check_edge(self):
 	 if self.all_num == None:
 		 pass
 	 else:
 		count = pic_count()
 	 	if self.eject_edge_or_not.isChecked():
+			self.all_num_with_edge=self.all_num
+			self.all_cnt_with_edge=self.all_cnt
+			self.all_area_with_edge = self.all_cnt
+			self.imgray_mask_with_edge = imgray_mask
 			coordinate = coordinateForCv()
 			self.all_num,self.all_cnt,self.all_cnt_area,self.edge_num,self.edge_cnt,self.edge_area =coordinate.check_edge(self.im,self.all_num,self.all_cnt,self.all_cnt_area)
 
@@ -206,6 +185,313 @@ SIGNAL("clicked()"), self.select_folder)
 	 self.plt1.addItem(curve)
 
  
+
+
+ def make_scale(sefl,im,length=10,from_edge = 5,thick = 1,hight = 4,font_size = 0.6 ,pix = 10):
+	w = im.shape[1] *2
+	h = im.shape[0] *2
+	im2 = cv2.resize(im,(w,h))
+	cv2.line(im2,(w-length-from_edge,h-from_edge),(w-from_edge,h-from_edge),(180,255,100),thick)
+	cv2.line(im2,(w-length-from_edge,h-from_edge-hight/2),(w-length-from_edge,h-from_edge+hight/2),(180,255,100),thick)
+	cv2.line(im2,(w-from_edge,h-from_edge-hight/2),(w-from_edge,h-from_edge+hight/2),(180,255,100),thick)
+	size = pix*length /2
+	text = str(size) + ' ' + 'micro m'
+	#font = cv2.FONT_HERSHEY_COMPLEX_SMALL
+	#font = cv2.FONT_HERSHEY_SIMPLEX
+	font = cv2.FONT_HERSHEY_PLAIN
+	cv2.putText(im2,text,(w-length-from_edge*2,h-from_edge-hight),font, font_size,(180,255,100))
+	cv2.imshow("",im2)
+	cv2.waitKey(0)
+	cv2.destroyAllWindows()
+	return im2
+
+
+ def contextMenue(self,event):
+        menu = QtGui.QMenu()
+	submenu = QtGui.QMenu()
+	submenu.setTitle("Contour menu")
+	if self.all_con != None: 
+		menu.addMenu(submenu)
+        menu.addAction('Canny',self.make_canny)
+	menu.addAction('Fourier transform',self.FFT)
+	menu.addAction('All_drow',self.all_drowcontour)
+	menu.addAction('Clear',self.clear)
+	
+	submenu.addAction('Save Contour',self.cut_area)
+	submenu.addAction('Erase contour',self.erase_area)
+	submenu.addAction('Add contour',self.add_area)
+	submenu.addAction('Recover a erased contour',self.recover_area)
+
+	self.contour_select()
+	menu.exec_(QtGui.QCursor.pos())
+ def FFT(self):
+	 if self.imgray is None :
+		 pass
+	 else:
+	 	count = pic_count()
+	 	im = count.FFT(self.imgray)
+		self.open_or_add_pic(im)
+	
+ def sub_window_pic(self,im):
+	if self.sub_vb == None:
+		self.sub_vb = self.sub_view.addViewBox()
+	else:
+		self.sub_vb.clear()
+	self.sub_vb.setAspectLocked(True)
+	self.sub_item = pg.ImageItem()
+	self.sub_vb.addItem(self.sub_item)
+	coor = coordinateForCv()
+	self.pyqt_imgray = coor.cv2pyqtgraph(im)
+	self.sub_item.setImage(self.pyqt_imgray)
+
+ def open_or_add_pic(self,pic1=None,pic2=None,weight1=1,weight2=0.5):
+	 self.pic_item = pg.ImageItem()
+	 if self.vb is None:
+		 pass
+	 else:
+	 	self.vb.clear()
+	 	self.vb.addItem(self.pic_item)
+	 if pic1 is None:
+		if self.pyqt_pic is None:
+			return
+		else:
+			self.add = self.pyqt_pic
+	 elif pic1 is not None and pic2 is None:
+		self.add =pic1
+	 else:
+	 	self.add = cv2.addWeighted(pic1,weight1,pic2,weight2,0)
+	 self.View_or_Image()
+	 self.pic_item.setImage(self.add)
+ def mouseDragEvent(self, event):
+	 print pos
+
+ def eventFilter(self, source, event):
+	if (type(event) == QtGui.QKeyEvent and event.key() == QtCore.Qt.Key_A) :
+		pass
+	if (event.type() == (QtCore.QEvent.MouseButtonDblClick) and source is self.pic_view):
+		print '???'
+	if (event.type() == (QtCore.QEvent.MouseButtonRelease) and source is self.pic_view):
+		#if event.button() == QtCore.Qt.LeftButton:
+		print event.globalX()
+
+	if (event.type() == QtCore.QEvent.MouseButtonPress and source is self.pic_view):
+		if event.button() == QtCore.Qt.RightButton:
+			pass
+
+		if event.button() == QtCore.Qt.LeftButton:
+			if self.all_con is None :
+				pass
+			else :
+				self.pic_item.setImage(self.all_con)
+	
+	return QtGui.QWidget.eventFilter(self, source, event)
+ def scrollbar_set(self,files_len,filename_pos):
+	self.file_scrollbar.setProperty("value", files_len)
+	self.file_scrollbar.setValue(filename_pos)
+	self.file_scrollbar.setMaximum(files_len)
+	self.file_scrollbar.valueChanged.connect(self.cur_position)
+
+ def push_file_button(self):
+	 self.open_file()
+	 self.pic_set()
+	 self.scrollbar_before()
+
+ def open_file(self):
+	self.init_var()
+	self.filename = QtGui.QFileDialog.getOpenFileName(self,filter="Image Files (*.png *.bmp *jpg)")
+        if self.filename is not None:
+		if self.pic_item is not None:
+			self.vb.clear()
+		if self.plt1 is not None:
+			self.plt1.clear()
+			
+		self.file_edit.setText(self.filename[0])
+		self.im = cv2.imread(self.filename[0])
+
+ def pic_set(self):
+	if len(self.im.shape) == 3:
+       		color = self.setCurrentIndex()
+		count = pic_count()
+		self.imgray = count.color_filter(self.im,color)
+		smooth = self.setsmooth()
+		blur = count.smoothing(self.imgray,smooth)
+		self.sub_window_pic(blur)
+		#cv2.imshow("",self.imgray)
+		#cv2.waitKey(0)
+		#cv2.destroyAllWindows()
+
+	else:
+		self.imgray = self.im
+	coor = coordinateForCv()
+	self.pyqt_pic = coor.cv2pyqtgraph(self.im)
+	if self.vb == None:
+		self.vb = self.pic_view.addViewBox(enableMenu=False)
+		self.vb.setAspectLocked(True)
+		#self.vb.setMouseEnabled(y=False)
+		#self.vb.setMouseEnabled(x=False)
+	else:
+		pass
+	self.open_or_add_pic(self.pyqt_pic)
+	
+ def scrollbar_before(self):
+	self.pic_view.scene().sigMouseClicked.connect(self.mouseMoved)
+	coor = coordinateForCv()
+	self.namelist, self.files_len, self.filename_pos = coor.get_list_and_index(self.filename[0])
+	self.scrollbar_set( self.files_len, self.filename_pos)
+
+ def mouseReleased(self,event):
+	 #QtGui.qApp.restoreOverrideCursor()
+	 self.update()
+         QtGui.QGraphicsItem.mouseReleaseEvent(self, event)
+	 print '>>>>'
+	 #super(pg.GraphicsLayoutWidget, self).mouseReleaseEvent( event)
+
+ def make_canny(self):
+	 cv_test = opencv_test()
+	 cv_img = cv_test.canny(self.im)
+	 coor = coordinateForCv()
+	 self.canny = coor.cv2pyqtgraph(cv_img)
+	 self.open_or_add_pic(self.canny)
+
+ def select_folder(self):
+        folder = QtGui.QFileDialog.getExistingDirectory(self,'Open Dorectory',os.path.expanduser('~'))
+        if folder:
+		self.folder_edit.setText(folder)
+ ###############################################
+ # check box & combobox
+ ###############################################
+ def setCurrentIndex(self):
+	if self.color_combo.currentIndex () == 0:
+		color = 'gray'
+		return color
+	if self.color_combo.currentIndex () == 1:
+		color = 'r'
+		return color
+
+	if self.color_combo.currentIndex () == 2:
+		color = 'g'
+		return color
+
+	if self.color_combo.currentIndex () == 3:
+		color = 'b'
+		return color
+ def setsmooth(self):
+	if self.smooth_combo.currentIndex () == 0:
+		smooth = 'None'
+		return smooth
+	if self.smooth_combo.currentIndex () == 1:
+		smooth = 'Bilateral'
+		return smooth
+	if self.smooth_combo.currentIndex () == 2:
+		smooth = 'GaussianBlur'
+		return smooth
+	if self.smooth_combo.currentIndex () == 3:
+		smooth = 'medianBlur'
+		return smooth
+	if self.smooth_combo.currentIndex () == 4:
+		smooth = 'Blur'
+		return smooth
+
+ 
+ def View_or_Image(self):
+	if self.form_view_or_image.isChecked():
+		self.adjust_view()
+	else:
+		self.adjust_pic()
+
+ #########################################
+ #adjust view & picture scale
+ #########################################
+ def adjust_pic(self):
+	 __x = self.pic_view.x()
+	 __y = self.pic_view.y()
+
+	 self.pic_view.setGeometry(QtCore.QRect(__x, __y, 512, 512))
+
+	 _view_x = self.pic_view.width()
+	 _view_y = self.pic_view.height()
+
+	 __width = float(self.add.shape[0])
+	 __height = float(self.add.shape[1])
+	 if __width > __height :
+		 scale = _view_x/__width
+	 else:
+		 scale = _view_y/__height
+	 self.pic_item.scale(scale,scale)
+	 __main_x = int(__x + 512 + 80)
+	 __main_y = int(__y + 512 + 80)
+	 self.resize(__main_x,__main_y)
+
+
+ def adjust_view(self):
+	 bar = 8
+	 __width = float(self.add.shape[0])
+	 __height = float(self.add.shape[1])
+	 __x = self.pic_view.x()
+	 __y = self.pic_view.y()
+	 if __width <= 512 or __height <= 512:
+ 		__width, __height  = 512,512
+	 else:
+		 pass
+	 self.pic_view.setGeometry(QtCore.QRect(__x, __y, __width, __height))
+	 __main_x = int(__x + __width )
+	 __main_y = int(__y + __height )
+	 self.resize(__main_x,__main_y)
+
+ #############################################
+ # contour 
+ #############################################
+ def contour_select(self):
+	if self.all_cnt is None :
+		pass
+	else:
+		for i ,cnt in enumerate(self.all_cnt):
+			in_out = cv2.pointPolygonTest(cnt,(self.curPos[0],self.curPos[1]),False)
+			if in_out == 1 or in_out == 0:
+				self.cur_contour = np.zeros_like(self.im)
+				cv2.drawContours(self.cur_contour,[cnt],0,(0,255,0),-1)	 
+				coor = coordinateForCv()
+				self.cur_cnt = cnt
+				self.cur_cnt_number = i
+				self.cv_img = coor.cv2pyqtgraph(self.cur_contour)
+				self.open_or_add_pic(self.pyqt_pic,self.cv_img,0.2,1)
+			else :
+				pass
+
+ def clear(self):
+	 self.init_var()
+	 self.vb.clear()
+	 self.pic_item = pg.ImageItem()
+	 self.vb.addItem(self.pic_item)
+	 self.pic_item.setImage(self.pyqt_pic)
+	 self.all_con = None
+	 self.all_cnt = None
+
+ def all_drowcontour(self):
+	 self.init_var()
+	 count = pic_count()
+	 #self.imgray=cv2.bilateralFilter(self.imgray,10,20,5)
+	 imgray,im_color = count.gray_range_select(self.imgray,self.smallRange,self.largeRange) 
+	 #imgray,im_color = count.gray_range_select(self.imgray,80,160)
+ 	 """
+	 cv2.imshow("",imgray)
+	 cv2.waitKey(0)
+	 cv2.destroyAllWindows() 
+	 """
+	 self.imgray_mask,self.all_num,self.all_cnt,self.all_cnt_area = count.all_contour(imgray,self.maxArea,self.minArea)
+
+	 self.imgray_mask,self.all_cnt_area = self.check_edge()
+	 coor = coordinateForCv()
+	 self.cv_img = coor.cv2pyqtgraph(self.imgray_mask)
+	 
+	 imgray_mask_bool = np.asarray(self.cv_img,np.bool8)
+	 self.all_mask = np.zeros_like(self.pyqt_pic)
+	 self.all_mask[imgray_mask_bool]=(255,255,0)
+	 self.open_or_add_pic(self.pyqt_pic,self.all_mask,0.7,0.7)
+ 	 self.make_histogram()
+	 self.all_con = self.add
+
+
  def erase_area(self):
 	 self.erase_num.append(self.cur_cnt_number)
 	 cou = pic_count()
@@ -277,258 +563,16 @@ SIGNAL("clicked()"), self.select_folder)
 		else:
 			cv2.imwrite(temp_file[0],scale_pic)
 
-
- def make_scale(sefl,im,length=10,from_edge = 5,thick = 1,hight = 4,font_size = 0.6 ,pix = 10):
-	w = im.shape[1] *2
-	h = im.shape[0] *2
-	im2 = cv2.resize(im,(w,h))
-	cv2.line(im2,(w-length-from_edge,h-from_edge),(w-from_edge,h-from_edge),(180,255,100),thick)
-	cv2.line(im2,(w-length-from_edge,h-from_edge-hight/2),(w-length-from_edge,h-from_edge+hight/2),(180,255,100),thick)
-	cv2.line(im2,(w-from_edge,h-from_edge-hight/2),(w-from_edge,h-from_edge+hight/2),(180,255,100),thick)
-	size = pix*length /2
-	text = str(size) + ' ' + 'micro m'
-	#font = cv2.FONT_HERSHEY_COMPLEX_SMALL
-	#font = cv2.FONT_HERSHEY_SIMPLEX
-	font = cv2.FONT_HERSHEY_PLAIN
-	cv2.putText(im2,text,(w-length-from_edge*2,h-from_edge-hight),font, font_size,(180,255,100))
-	cv2.imshow("",im2)
-	cv2.waitKey(0)
-	cv2.destroyAllWindows()
-	return im2
-
- def contour_select(self):
-	if self.all_cnt is None :
+ ###############################################################
+ # slider
+ ###############################################################
+ def change_max_area_slider(self,value):
+	self.max_area_edit.setText(str(value))
+	self.maxArea = int(value)
+	if self.imgray is None :
 		pass
 	else:
-		for i ,cnt in enumerate(self.all_cnt):
-			in_out = cv2.pointPolygonTest(cnt,(self.curPos[0],self.curPos[1]),False)
-			if in_out == 1 or in_out == 0:
-				self.cur_contour = np.zeros_like(self.im)
-				cv2.drawContours(self.cur_contour,[cnt],0,(0,255,0),-1)	 
-				coor = coordinateForCv()
-				self.cur_cnt = cnt
-				self.cur_cnt_number = i
-				self.cv_img = coor.cv2pyqtgraph(self.cur_contour)
-				self.open_or_add_pic(self.pyqt_pic,self.cv_img,0.2,1)
-			else :
-				pass
-
- def contextMenue(self,event):
-        menu = QtGui.QMenu()
-	submenu = QtGui.QMenu()
-	submenu.setTitle("Contour menu")
-	if self.all_con != None: 
-		menu.addMenu(submenu)
-        menu.addAction('Canny',self.make_canny)
-	menu.addAction('Fourier transform',self.FFT)
-	menu.addAction('All_drow',self.all_drowcontour)
-	menu.addAction('Clear',self.clear)
-	
-	submenu.addAction('Save Contour',self.cut_area)
-	submenu.addAction('Erase contour',self.erase_area)
-	submenu.addAction('Add contour',self.add_area)
-	submenu.addAction('Recover a erased contour',self.recover_area)
-
-	self.contour_select()
-	menu.exec_(QtGui.QCursor.pos())
- def FFT(self):
-	 if self.imgray is None :
-		 pass
-	 else:
-	 	count = pic_count()
-	 	im = count.FFT(self.imgray)
-		self.open_or_add_pic(im)
-	
- def clear(self):
-	 self.init_var()
-	 self.vb.clear()
-	 self.pic_item = pg.ImageItem()
-	 self.vb.addItem(self.pic_item)
-	 self.pic_item.setImage(self.pyqt_pic)
-	 self.all_con = None
-	 self.all_cnt = None
-
- def all_drowcontour(self):
-	 self.init_var()
-	 count = pic_count()
-	 #self.imgray=cv2.bilateralFilter(self.imgray,10,20,5)
-	 imgray,im_color = count.gray_range_select(self.imgray,self.smallRange,self.largeRange) 
-	 #imgray,im_color = count.gray_range_select(self.imgray,80,160)
- 	 """
-	 cv2.imshow("",imgray)
-	 cv2.waitKey(0)
-	 cv2.destroyAllWindows() 
-	 """
-	 imgray_mask,self.all_num,self.all_cnt,self.all_cnt_area = count.all_contour(imgray,self.maxArea,self.minArea)	  
-
-	 
-	 imgray_mask,self.all_cnt_area = self.chack_edge()
-	 coor = coordinateForCv()
-	 self.cv_img = coor.cv2pyqtgraph(imgray_mask)
-	 
-	 imgray_mask_bool = np.asarray(self.cv_img,np.bool8)
-	 self.all_mask = np.zeros_like(self.pyqt_pic)
-	 self.all_mask[imgray_mask_bool]=(255,255,0)
-	 self.open_or_add_pic(self.pyqt_pic,self.all_mask,0.7,0.7)
- 	 self.make_histogram()
-	 self.all_con = self.add
- def sub_window_pic(self,im):
-	if self.sub_vb == None:
-		self.sub_vb = self.sub_view.addViewBox()
-	else:
-		self.sub_vb.clear()
-	self.sub_vb.setAspectLocked(True)
-	self.sub_item = pg.ImageItem()
-	self.sub_vb.addItem(self.sub_item)
-	coor = coordinateForCv()
-	self.pyqt_imgray = coor.cv2pyqtgraph(im)
-	self.sub_item.setImage(self.pyqt_imgray)
-
- def open_or_add_pic(self,pic1=None,pic2=None,weight1=1,weight2=0.5):
-	 self.pic_item = pg.ImageItem()
-	 if self.vb is None:
-		 pass
-	 else:
-	 	self.vb.clear()
-	 	self.vb.addItem(self.pic_item)
-	 if pic1 is None:
-		if self.pyqt_pic is None:
-			return
-		else:
-			self.add = self.pyqt_pic
-	 elif pic1 is not None and pic2 is None:
-		self.add =pic1
-	 else:
-	 	self.add = cv2.addWeighted(pic1,weight1,pic2,weight2,0)
-	 self.View_or_Image()
-	 self.pic_item.setImage(self.add)
- def mouseDragEvent(self, event):
-	 print pos
-
- def eventFilter(self, source, event):
-	if (type(event) == QtGui.QKeyEvent and event.key() == QtCore.Qt.Key_A) :
-		pass
-	if (event.type() == (QtCore.QEvent.MouseButtonDblClick) and source is self.pic_view):
-		print '???'
-	if (event.type() == (QtCore.QEvent.MouseButtonRelease) and source is self.pic_view):
-		#if event.button() == QtCore.Qt.LeftButton:
-		print event.globalX()
-
-	if (event.type() == QtCore.QEvent.MouseButtonPress and source is self.pic_view):
-		if event.button() == QtCore.Qt.RightButton:
-			pass
-
-		if event.button() == QtCore.Qt.LeftButton:
-			if self.all_con is None :
-				pass
-			else :
-				self.pic_item.setImage(self.all_con)
-	
-	return QtGui.QWidget.eventFilter(self, source, event)
- def scrollbar_set(self,files_len,filename_pos):
-	self.file_scrollbar.valueChanged.connect(self.cur_position)
-	self.file_scrollbar.setProperty("value", files_len)
-	self.file_scrollbar.setValue(filename_pos)
-	self.file_scrollbar.setMaximum(files_len)
-
-
- 	
- def open_file(self):
-	self.init_var()
-	self.filename = QtGui.QFileDialog.getOpenFileName(self,filter="Image Files (*.png *.bmp *jpg)")
-        if self.filename is not None:
-		if self.pic_item is not None:
-			self.vb.clear()
-		if self.plt1 is not None:
-			self.plt1.clear()
-			
-		self.file_edit.setText(self.filename[0])
-		self.im = cv2.imread(self.filename[0])
-		self.all_con = None
-		self.last_dir = os.path.dirname(unicode(self.filename))
-
-		if len(self.im.shape) == 3:
-       			color = self.setCurrentIndex()
-			count = pic_count()
-			self.imgray = count.color_filter(self.im,color)
-			smooth = self.setsmooth()
-			blur = count.smoothing(self.imgray,smooth)
-			self.sub_window_pic(blur)
-			#cv2.imshow("",self.imgray)
-			#cv2.waitKey(0)
-			#cv2.destroyAllWindows()
-
-		else:
-			self.imgray = self.im
-		coor = coordinateForCv()
-	 	self.pyqt_pic = coor.cv2pyqtgraph(self.im)
-		if self.vb == None:
-			self.vb = self.pic_view.addViewBox(enableMenu=False)
-			self.vb.setAspectLocked(True)
-			#self.vb.setMouseEnabled(y=False)
-			#self.vb.setMouseEnabled(x=False)
-		else:
-			pass
-		self.open_or_add_pic(self.pyqt_pic)
-		self.pic_view.scene().sigMouseClicked.connect(self.mouseMoved)
-		
-
-		namelist, files_len, filename_pos = coor.get_list_and_index(self.filename[0])
-		self.scrollbar_set( files_len, filename_pos)
-
- def mouseReleased(self,event):
-	 #QtGui.qApp.restoreOverrideCursor()
-	 self.update()
-         QtGui.QGraphicsItem.mouseReleaseEvent(self, event)
-	 print '>>>>'
-	 #super(pg.GraphicsLayoutWidget, self).mouseReleaseEvent( event)
- def adjust_pic(self):
-	 __x = self.pic_view.x()
-	 __y = self.pic_view.y()
-
-	 self.pic_view.setGeometry(QtCore.QRect(__x, __y, 512, 512))
-
-	 _view_x = self.pic_view.width()
-	 _view_y = self.pic_view.height()
-
-	 __width = float(self.add.shape[0])
-	 __height = float(self.add.shape[1])
-	 if __width > __height :
-		 scale = _view_x/__width
-	 else:
-		 scale = _view_y/__height
-	 self.pic_item.scale(scale,scale)
-	 __main_x = int(__x + 512 + 80)
-	 __main_y = int(__y + 512 + 80)
-	 self.resize(__main_x,__main_y)
-
-
- def adjust_view(self):
-	 bar = 8
-	 __width = float(self.add.shape[0])
-	 __height = float(self.add.shape[1])
-	 __x = self.pic_view.x()
-	 __y = self.pic_view.y()
-	 if __width <= 512 or __height <= 512:
- 		__width, __height  = 512,512
-	 else:
-		 pass
-	 self.pic_view.setGeometry(QtCore.QRect(__x, __y, __width, __height))
-	 __main_x = int(__x + __width )
-	 __main_y = int(__y + __height )
-	 self.resize(__main_x,__main_y)
-
- def make_canny(self):
-	 cv_test = opencv_test()
-	 cv_img = cv_test.canny(self.im)
-	 coor = coordinateForCv()
-	 self.canny = coor.cv2pyqtgraph(cv_img)
-	 self.open_or_add_pic(self.canny)
-
- def select_folder(self):
-        folder = QtGui.QFileDialog.getExistingDirectory(self,'Open Dorectory',os.path.expanduser('~'))
-        if folder:
-            self.folder_edit.setText(folder)
+		self.all_drowcontour()
 
  def change_min_area_slider(self,value):
 	self.min_area_edit.setText(str(value))
