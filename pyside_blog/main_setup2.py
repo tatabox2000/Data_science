@@ -110,8 +110,8 @@ SIGNAL("clicked()"), self.select_folder)
  def calc_eba(self):
 	if self.eject_edge_or_not.isChecked():
 	
-		
-		coor.eba_calc(self.all_num_with_edge,self.all_cnt_with_edge,self.all_cnt_area_with_edge,self.imgray_mask)
+		coor = coordinateForCv()
+		coor.eba_calc(self.all_num_with_edge,self.all_cnt_with_edge,self.all_cnt_area_with_edge,self.imgray_mask,self.imgray)
 	else:
 		coor = coordinateForCv()
 		coor.eba_calc(self.all_num,self.all_cnt,self.all_cnt_area,self.imgray_mask,self.imgray)
@@ -141,6 +141,7 @@ SIGNAL("clicked()"), self.select_folder)
 	self.files_len = None
 	self.filename_pos = None
 	self.imgray_mask = None
+	self.all_cnt_area_with_edge = None
  def check_edge(self):
 	 if self.all_num == None:
 		 pass
@@ -150,7 +151,7 @@ SIGNAL("clicked()"), self.select_folder)
 			self.all_num_with_edge=self.all_num
 			self.all_cnt_with_edge=self.all_cnt
 			self.all_area_with_edge = self.all_cnt
-			self.imgray_mask_with_edge = imgray_mask
+			self.imgray_mask_with_edge = self.imgray_mask
 			coordinate = coordinateForCv()
 			self.all_num,self.all_cnt,self.all_cnt_area,self.edge_num,self.edge_cnt,self.edge_area =coordinate.check_edge(self.im,self.all_num,self.all_cnt,self.all_cnt_area)
 
