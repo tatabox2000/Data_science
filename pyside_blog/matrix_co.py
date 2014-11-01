@@ -39,15 +39,17 @@ class coordinateForCv:
 	 dirname  = os.path.dirname(filename)
 	 name  = os.path.basename(filename)
 
-	 search_name = dirname + u'/*' + ext
-	 rep = '/' + name
-	 rep_to = '/' + name
-	 filename2 = filename.replace(rep,rep_to)
+	 search_name = dirname + '/*' + ext
 	 namelist = glob.glob(search_name)
+	 namelist_uni=[]
+	 i = 0
+	 for i in np.arange(0,len(namelist),1):
+		 name = namelist[i].replace('\\','/')
+		 namelist_uni.append(name)
 	 files_len = len(namelist) - 1
-	 filename_pos = namelist.index(filename2)
+	 filename_pos = namelist_uni.index(filename)
 
-	 return namelist,files_len,filename_pos
+	 return namelist_uni,files_len,filename_pos
  
 
  def check_edge(self,im,all_num,all_cnt,all_cnt_area,edge_pix=2):

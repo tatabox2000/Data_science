@@ -121,6 +121,7 @@ SIGNAL("clicked()"), self.select_folder)
 	self.sub_vb.clear()
 	i =  self.file_scrollbar.value()
 	self.im = cv2.imread(self.namelist[i])
+	self.file_edit.setText(self.namelist[i])
 
 	self.pic_set()
 
@@ -665,6 +666,7 @@ SIGNAL("clicked()"), self.select_folder)
 		pass
  """
 if __name__ == '__main__':
+	QtCore.QTextCodec.setCodecForCStrings( QtCore.QTextCodec.codecForLocale() )
 	app = QtGui.QApplication(sys.argv)
 	dmw = DesignerMainWindow()
 	dmw.show()
