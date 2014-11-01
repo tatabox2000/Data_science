@@ -305,9 +305,8 @@ SIGNAL("clicked()"), self.select_folder)
 			self.vb.clear()
 		if self.plt1 is not None:
 			self.plt1.clear()
-			
 		self.file_edit.setText(self.filename[0])
-		self.im = cv2.imread(self.filename[0])
+                self.im = cv2.imread(self.filename[0])
 
  def pic_set(self):
 	if len(self.im.shape) == 3:

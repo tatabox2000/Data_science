@@ -41,7 +41,7 @@ class coordinateForCv:
 
 	 search_name = dirname + u'/*' + ext
 	 rep = '/' + name
-	 rep_to = '\\' + name
+	 rep_to = '/' + name
 	 filename2 = filename.replace(rep,rep_to)
 	 namelist = glob.glob(search_name)
 	 files_len = len(namelist) - 1
