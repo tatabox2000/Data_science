@@ -95,7 +95,7 @@ class pic_count:
 	 return erased_mask, cnt_area
 
  def make_name(self,name = None,i=1):
-	 name4,name5 =re.split(r'\\',name)
+	 name4,name5 =re.split(r'/',name)
          name6 = name4 + '_' + str(i)
          name7 = name6 + '_mask'
          name6_jpg = name6 + '.jpg'
@@ -183,7 +183,7 @@ class pic_count:
 	 if dir == None :
 		 pos_name  = glob.glob(name_ext)
 	 else :
-		 name_ext = dir + '\\' + name_ext
+		 name_ext = dir + '/' + name_ext
 		 print name_ext
 		 pos_name  = glob.glob(name_ext)
 	 return pos_name
@@ -206,9 +206,9 @@ class pic_count:
 		all_color = []
     		i = 1
     		pic.write(u"サンプル名,ファイル名,面積,数\n")
-    		for name in glob.glob('*\\*.jpg'):
+    		for name in glob.glob('*/*.jpg'):
         		if self.gray.search(name) is None:
-				name2 = re.sub(r'\\',',',name) + ','
+				name2 = re.sub(r'/',',',name) + ','
 	         		name3 = re.sub('\n',',',name2)
 				pic.write(name3)
 				name6_jpg,name7_jpg,name_UV = self.make_name(name,i)
