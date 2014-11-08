@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pygraph_Opencv.ui'
 #
-# Created: Mon Oct 20 12:33:32 2014
+# Created: Sat Nov 08 20:15:22 2014
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ class Ui_Qt_CV_MainWindow(object):
         self.centralwidget = QtGui.QWidget(Qt_CV_MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.layoutWidget = QtGui.QWidget(self.centralwidget)
-        self.layoutWidget.setGeometry(QtCore.QRect(400, 50, 411, 41))
+        self.layoutWidget.setGeometry(QtCore.QRect(400, 80, 411, 41))
         self.layoutWidget.setObjectName("layoutWidget")
         self.horizontalLayout = QtGui.QHBoxLayout(self.layoutWidget)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
@@ -39,7 +39,7 @@ class Ui_Qt_CV_MainWindow(object):
         self.pic_view.setViewportUpdateMode(QtGui.QGraphicsView.FullViewportUpdate)
         self.pic_view.setObjectName("pic_view")
         self.exec_button = QtGui.QPushButton(self.centralwidget)
-        self.exec_button.setGeometry(QtCore.QRect(640, 10, 81, 31))
+        self.exec_button.setGeometry(QtCore.QRect(640, 40, 81, 31))
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -291,7 +291,7 @@ class Ui_Qt_CV_MainWindow(object):
         self.threshold1_edit_2.setAlignment(QtCore.Qt.AlignCenter)
         self.threshold1_edit_2.setObjectName("threshold1_edit_2")
         self.label_13 = QtGui.QLabel(self.centralwidget)
-        self.label_13.setGeometry(QtCore.QRect(460, 6, 271, 46))
+        self.label_13.setGeometry(QtCore.QRect(460, 0, 271, 46))
         font = QtGui.QFont()
         font.setPointSize(10)
         self.label_13.setFont(font)
@@ -300,7 +300,7 @@ class Ui_Qt_CV_MainWindow(object):
         self.sub_view.setGeometry(QtCore.QRect(830, 0, 201, 181))
         self.sub_view.setObjectName("sub_view")
         self.EBA_button = QtGui.QPushButton(self.centralwidget)
-        self.EBA_button.setGeometry(QtCore.QRect(730, 10, 81, 31))
+        self.EBA_button.setGeometry(QtCore.QRect(730, 40, 81, 31))
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -350,7 +350,7 @@ class Ui_Qt_CV_MainWindow(object):
         self.horizontalLayout_2.addWidget(self.file_button_2)
         Qt_CV_MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(Qt_CV_MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1052, 24))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1052, 29))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtGui.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
