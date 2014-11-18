@@ -1,0 +1,1 @@
+pyside-uic -o pygraph_Opencv.py pygraph_Opencv.ui  

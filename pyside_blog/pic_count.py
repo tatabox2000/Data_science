@@ -121,6 +121,18 @@ class pic_count:
 		 select_color = np.zeros((im.shape[0],im.shape[1]),np.uint8)
 		 select_color[:,:] = im[:,:,0]
 		 return select_color
+	 elif color == 'y' :
+		 select_color = np.zeros((im.shape[0],im.shape[1]),np.uint8)
+		 select_color2 = select_color.copy()
+
+		 select_color[:,:] = im[:,:,1]
+		 select_color = select_color/2
+		 select_color2[:,:] = im[:,:,2]
+		 select_color2 = select_color2/2
+		 select_color = select_color+ select_color2
+		 return select_color
+
+
 
  def smoothing(self,imgray,smooth = 'None'):
 	 if  len(imgray.shape) == 3:

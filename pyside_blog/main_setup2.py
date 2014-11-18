@@ -56,11 +56,12 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
 	self.setupUi(self)
 	
 	QtCore.QObject.connect(self.file_button, QtCore.SIGNAL("clicked()"), self.push_file_button)
-	QtCore.QObject.connect(self.exec_button,QtCore.SIGNAL("clicked()"),self.make_canny)
+	#QtCore.QObject.connect(self.exec_button,QtCore.SIGNAL("clicked()"),self.make_canny)
 	QtCore.QObject.connect(self.EBA_button,QtCore.SIGNAL("clicked()"),self.calc_eba)
 
 	self.init_var()
 	self.pic_item = None
+	self.size = 0.0361
 	self.imgray = None
 	self.sub_vb = None
 	self.vb = None
@@ -79,10 +80,8 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
 SIGNAL("triggered()"), QtGui.qApp, QtCore.SLOT("quit()"))
 	QtCore.QObject.connect(self.quit_button, QtCore.
 SIGNAL("clicked()"), self.close_event)
-
-	QtCore.QObject.connect(self.folder_button, QtCore.
-SIGNAL("clicked()"), self.select_folder)
 	"""
+	QtCore.QObject.connect(self.exec_button, QtCore.SIGNAL("clicked()"), self.push_execute_box)
 	QtCore.QObject.connect(self.threshold1_slider, QtCore.SIGNAL("valueChanged(int)"), self.change_threshold1_slider)
 	QtCore.QObject.connect(self.threshold2_slider, QtCore.SIGNAL("valueChanged(int)"), self.change_threshold2_slider)
 	QtCore.QObject.connect(self.threshold1_edit, QtCore.SIGNAL("textEdited(const QString&)"), self.change_threshold1_edit)
@@ -95,7 +94,8 @@ SIGNAL("clicked()"), self.select_folder)
 	QtCore.QObject.connect( self.color_combo, QtCore.SIGNAL('activated(int)'), self.setCurrentIndex)
 	QtCore.QObject.connect( self.smooth_combo, QtCore.SIGNAL('activated(int)'), self.setsmooth)
 	#QtCore.QObject.connect(self.threshold1_edit, QtCore.SIGNAL("textEdited(const QString&)"), self.change_text)
-	
+	QtCore.QObject.connect(self.size_edit, QtCore.SIGNAL("textEdited(const QString&)"), self.change_size_edit)
+
         self.pic_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.pic_view.customContextMenuRequested.connect(self.contextMenue) 
 	self.pic_view.installEventFilter(self)
@@ -106,7 +106,8 @@ SIGNAL("clicked()"), self.select_folder)
 	#self.file_scrollbar.valueChanged.connect(self.cur_position)
 
 	#self.form_view_or_image.stateChanged.connect(self.open_or_add_pic)
-
+ def change_size_edit(self):
+	self.size = float(self.size_edit.text())
  def calc_eba(self):
 	if self.eject_edge_or_not.isChecked():
 	
@@ -376,6 +377,9 @@ SIGNAL("clicked()"), self.select_folder)
 	if self.color_combo.currentIndex () == 3:
 		color = 'b'
 		return color
+	if self.color_combo.currentIndex () == 4:
+		color = 'y'
+		return color
  def setsmooth(self):
 	if self.smooth_combo.currentIndex () == 0:
 		smooth = 'None'
@@ -392,6 +396,22 @@ SIGNAL("clicked()"), self.select_folder)
 	if self.smooth_combo.currentIndex () == 4:
 		smooth = 'Blur'
 		return smooth
+ def setextention(self):
+	if self.extention_combo.currentIndex () == 0:
+		smooth = '*.jpg'
+		return smooth
+	if self.extention_combo.currentIndex () == 1:
+		smooth = '*.bmp'
+		return smooth
+	if self.extention_combo.currentIndex () == 2:
+		smooth = '*.tiff'
+		return smooth
+#	if self.extention_combo.currentIndex () == 3:
+#		smooth = 'medianBlur'
+#		return smooth
+#	if self.extention_combo.currentIndex () == 4:
+#		smooth = 'Blur'
+#		return smooth
 
  
  def View_or_Image(self):
@@ -467,6 +487,49 @@ SIGNAL("clicked()"), self.select_folder)
 	 self.pic_item.setImage(self.pyqt_pic)
 	 self.all_con = None
 	 self.all_cnt = None
+ def push_execute_box(self):
+	 folder = QtGui.QFileDialog.getExistingDirectory(self,'Open Dorectory',os.path.expanduser('~'))
+	 import glob
+	 ext = self.setextention()
+	 os.chdir(folder)
+	 calc_cnt =[]
+	 for name in glob.glob(ext):
+		 self.im = cv2.imread(name)
+		 cnt = self.execute(self.im)
+		 calc_cnt.extend(cnt)
+	 import codecs
+	 import csv
+	 with codecs.open("pic.csv",'ab','cp932') as pic:
+		 csvWriter = csv.writer(pic)
+		 csvWriter.writerow(calc_cnt)  
+	 print calc_cnt
+
+
+
+ def execute(self,im):
+	 self.init_var()
+ 	 color = self.setCurrentIndex()
+	 count = pic_count()
+	 _imgray = count.color_filter(im,color)
+	 smooth = self.setsmooth()
+	 blur = count.smoothing(_imgray,smooth)
+	 imgray,im_color = count.gray_range_select(_imgray,self.smallRange,self.largeRange) 
+	 self.imgray_mask,self.all_num,self.all_cnt,self.all_cnt_area = count.all_contour(imgray,self.maxArea,self.minArea)
+
+	 self.imgray_mask,self.all_cnt_area = self.check_edge()
+	 coor = coordinateForCv()
+	 self.cv_img = coor.cv2pyqtgraph(self.imgray_mask)
+	 
+	 #imgray_mask_bool = np.asarray(self.cv_img,np.bool8)
+	 #self.all_mask = np.zeros_like(self.im)
+	 #self.all_mask[imgray_mask_bool]=(255,255,0)
+	 area = []
+	 for i  in self.all_cnt_area:
+		 j = self.size *float(i)
+		 area.append(j)
+	 #print area
+	 return area
+
 
  def all_drowcontour(self):
 	 self.init_var()
