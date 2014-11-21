@@ -1,3 +1,4 @@
+# -*- coding: cp932 -*-
 import numpy as np
 import os 
 import cv2
@@ -23,7 +24,6 @@ class separate_pic():
 		save_pic = np.zeros((x/num,y/num,3),np.uint8)
 		for i in np.arange(1,num+1):
 			for j in np.arange(1,num+1):
-				print i,j
 				x2 = x / num * i
 				y2 = y / num * j
 				save_x = x / num
@@ -37,11 +37,11 @@ class separate_pic():
 			y1 = 0
 			x1 = x2
 if __name__ == '__main__':
-	os.chdir(u"C:/Users/analyst/Documents/Data_science/pyside_blog/pic/mil/")
-	pass_name= u"C:/Users/analyst/Documents/Data_science/pyside_blog/pic/mil/B64-2.jpg"
+	os.chdir(u"I:/picture/mills/Amill/")
+	pass_name= u"I:/picture/mills/Amill/A_1150_1.jpg"
 	name = os.path.basename(pass_name)
 	im = cv2.imread(pass_name)
 	sep = separate_pic()
-	x,y = sep.adjust_pic(im,5)
-	sep.sepalate_pic(x,y,5,name)
+	x,y = sep.adjust_pic(im,9)
+	sep.sepalate_pic(x,y,9,name)
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1052</width>
-    <height>766</height>
+    <width>1085</width>
+    <height>827</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -29,9 +29,9 @@
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>400</x>
-      <y>80</y>
-      <width>411</width>
+      <x>410</x>
+      <y>50</y>
+      <width>421</width>
       <height>41</height>
      </rect>
     </property>
@@ -52,9 +52,9 @@
     <property name="geometry">
      <rect>
       <x>519</x>
-      <y>190</y>
-      <width>512</width>
-      <height>512</height>
+      <y>210</y>
+      <width>551</width>
+      <height>561</height>
      </rect>
     </property>
     <property name="viewportUpdateMode">
@@ -64,8 +64,8 @@
    <widget class="QPushButton" name="exec_button">
     <property name="geometry">
      <rect>
-      <x>640</x>
-      <y>40</y>
+      <x>660</x>
+      <y>10</y>
       <width>81</width>
       <height>31</height>
      </rect>
@@ -84,9 +84,9 @@
     <property name="geometry">
      <rect>
       <x>400</x>
-      <y>140</y>
-      <width>421</width>
-      <height>41</height>
+      <y>190</y>
+      <width>431</width>
+      <height>20</height>
      </rect>
     </property>
     <property name="value">
@@ -136,9 +136,9 @@
     <property name="geometry">
      <rect>
       <x>397</x>
-      <y>190</y>
+      <y>210</y>
       <width>121</width>
-      <height>511</height>
+      <height>561</height>
      </rect>
     </property>
    </widget>
@@ -404,7 +404,7 @@
     <property name="geometry">
      <rect>
       <x>110</x>
-      <y>50</y>
+      <y>40</y>
       <width>271</width>
       <height>22</height>
      </rect>
@@ -424,7 +424,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>50</y>
+      <y>44</y>
       <width>81</width>
       <height>16</height>
      </rect>
@@ -707,7 +707,7 @@
    <widget class="QLineEdit" name="size_edit">
     <property name="geometry">
      <rect>
-      <x>400</x>
+      <x>410</x>
       <y>11</y>
       <width>51</width>
       <height>31</height>
@@ -737,10 +737,10 @@
    <widget class="QLabel" name="label_13">
     <property name="geometry">
      <rect>
-      <x>460</x>
+      <x>480</x>
       <y>0</y>
-      <width>271</width>
-      <height>46</height>
+      <width>71</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="font">
@@ -749,24 +749,24 @@
      </font>
     </property>
     <property name="text">
-     <string>μ㎡/pix　[Enter this number]</string>
+     <string>μ㎡/pix　</string>
     </property>
    </widget>
    <widget class="GraphicsLayoutWidget" name="sub_view">
     <property name="geometry">
      <rect>
-      <x>830</x>
+      <x>840</x>
       <y>0</y>
-      <width>201</width>
-      <height>181</height>
+      <width>231</width>
+      <height>201</height>
      </rect>
     </property>
    </widget>
    <widget class="QPushButton" name="EBA_button">
     <property name="geometry">
      <rect>
-      <x>730</x>
-      <y>40</y>
+      <x>750</x>
+      <y>10</y>
       <width>81</width>
       <height>31</height>
      </rect>
@@ -902,13 +902,140 @@
      </item>
     </layout>
    </widget>
+   <widget class="QLabel" name="label_17">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>30</y>
+      <width>101</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>[Enter this number]</string>
+    </property>
+   </widget>
+   <widget class="QTableWidget" name="tableWidget">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>100</y>
+      <width>431</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="rowCount">
+     <number>2</number>
+    </property>
+    <property name="columnCount">
+     <number>8</number>
+    </property>
+    <attribute name="horizontalHeaderDefaultSectionSize">
+     <number>100</number>
+    </attribute>
+    <attribute name="horizontalHeaderMinimumSectionSize">
+     <number>21</number>
+    </attribute>
+    <attribute name="verticalHeaderDefaultSectionSize">
+     <number>29</number>
+    </attribute>
+    <attribute name="verticalHeaderMinimumSectionSize">
+     <number>13</number>
+    </attribute>
+    <row/>
+    <row/>
+    <column>
+     <property name="text">
+      <string>File name</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>area size</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>count</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>average</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>median</string>
+     </property>
+    </column>
+    <column/>
+    <column/>
+    <column/>
+   </widget>
+   <widget class="QLabel" name="label_18">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>74</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Save Mode</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="save_mode_combo">
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>70</y>
+      <width>271</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>None</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>CSV:Distribution(Histogram)</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>CSV:Count &amp; Size</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QCheckBox" name="form_view_or_image_2">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>700</y>
+      <width>181</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Watershed</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1052</width>
+     <width>1085</width>
      <height>24</height>
     </rect>
    </property>
@@ -918,12 +1045,24 @@
     </property>
     <addaction name="actionQuit"/>
    </widget>
+   <widget class="QMenu" name="menuTool">
+    <property name="title">
+     <string>Tool</string>
+    </property>
+    <addaction name="actionSeparate_picture"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuTool"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionQuit">
    <property name="text">
     <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionSeparate_picture">
+   <property name="text">
+    <string>separate picture</string>
    </property>
   </action>
  </widget>
