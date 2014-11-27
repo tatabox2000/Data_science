@@ -55,7 +55,20 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
        	self.ui = Ui_Qt_CV_MainWindow()
 	self.setupUi(self)
 	
-	QtCore.QObject.connect(self.file_button, QtCore.SIGNAL("clicked()"), self.push_file_button)
+###########################################################
+# Table Settings
+###########################################################
+        vheader = QtGui.QHeaderView(QtCore.Qt.Orientation.Vertical)
+        vheader.setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        self.tableWidget.setVerticalHeader(vheader)
+        hheader = QtGui.QHeaderView(QtCore.Qt.Orientation.Horizontal)
+        hheader.setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        self.tableWidget.setHorizontalHeader(hheader)
+        #self.tableWidget.setHorizontalHeaderLabels(title)
+
+
+
+        QtCore.QObject.connect(self.file_button, QtCore.SIGNAL("clicked()"), self.push_file_button)
 	#QtCore.QObject.connect(self.exec_button,QtCore.SIGNAL("clicked()"),self.make_canny)
 	QtCore.QObject.connect(self.EBA_button,QtCore.SIGNAL("clicked()"),self.calc_eba)
 
@@ -123,7 +136,8 @@ SIGNAL("clicked()"), self.close_event)
 	i =  self.file_scrollbar.value()
 	self.im = cv2.imread(self.namelist[i])
 	self.file_edit.setText(self.namelist[i])
-
+        name = QtGui.QTableWidgetItem(os.path.basename(self.namelist[i]))
+        self.tableWidget.setItem(0,0,name)
 	self.pic_set()
 
  def init_var(self):
@@ -162,34 +176,69 @@ SIGNAL("clicked()"), self.close_event)
 		else:
 			erased_mask,cur_contour_area = count.mono_re_draw_contour(self.im,self.all_num,self.all_cnt,self.all_cnt_area,self.erase_num)
 			return erased_mask,cur_contour_area
+ def result_calculate(self):
+    if self.cur_contour_area is None:
+        if self.all_cnt_area is None:
+            return
+	else :
+	    vals = self.all_cnt_area
+    else:
+	vals = self.cur_contour_area
+    if vals == []:
+        return
+    else:
+        calc = []
+        vals = np.array(vals)
+        vals = self.size * vals
+        _sum = round(np.sum(vals),3)
+        average = round(np.mean(vals),3)
+        var = round(np.var(vals),3)
+        std = round(np.std(vals),3)
+        count = len(vals)
+        calc.append(vals)
+        calc.append(_sum)
+        calc.append(average)
+        calc.append(var)
+        calc.append(std)
+        calc.append(count)
+        return calc
 
+ def table_set(self):
+     if self.cur_contour_area is None and self.all_cnt_area is None:
+         return
+     
+     calc = self.result_calculate()
+     title = ["File Name","sum","average","var","std","counts"]
+     num = int(len(calc))
+     self.tableWidget.setHorizontalHeaderLabels(title)
+     for i in np.arange(1,num,1):
+         item = QtGui.QTableWidgetItem(str(calc[i]))
+         self.tableWidget.setItem(0,i,item)
 
-
+         
+     
  def make_histogram(self):
-	 if self.cur_contour_area is None:
-		 if self.all_cnt_area is None:
-			 return
-		 else :
-			 vals = self.all_cnt_area
-	 else:
-		 vals = self.cur_contour_area
-	 if self.plt1 == None:
+     if self.cur_contour_area is None and self.all_cnt_area is None:
+         return
+     else:
+         calc = self.result_calculate()
+         if calc == None:
+             return
+     if self.plt1 == None:
 		 self.plt1 = self.hist_view.plotItem
 		 #self.plt1.clear()
-	 else:
+     else:
 		 self.plt1.clear()
-	 self.plt1.hideAxis('left')
-	 self.plt1.showAxis('right')
+         
+     self.plt1.hideAxis('left')
+     self.plt1.showAxis('right')
 
-	 #vals = np.hstack([np.random.normal(size=500), np.random.normal(size=260, loc=4)])
-	 y,x = np.histogram(vals,bins=100)
-	 curve = pg.PlotCurveItem(x, y, stepMode=True, fillLevel=0, brush=(0, 0, 255, 80))
-	 curve.rotate(90)
-	 self.plt1.addItem(curve)
-
- 
-
-
+     #vals = np.hstack([np.random.normal(size=500), np.random.normal(size=260, loc=4)])
+     y,x = np.histogram(calc[0],bins=100)
+     curve = pg.PlotCurveItem(x, y, stepMode=True, fillLevel=0, brush=(0, 0, 255, 80))
+     curve.rotate(90)
+     self.plt1.addItem(curve)
+     self.table_set()
  def make_scale(sefl,im,length=10,from_edge = 5,thick = 1,hight = 4,font_size = 0.6 ,pix = 10):
 	w = im.shape[1] *2
 	h = im.shape[0] *2
@@ -308,6 +357,9 @@ SIGNAL("clicked()"), self.close_event)
 		if self.plt1 is not None:
 			self.plt1.clear()
 		self.file_edit.setText(self.filename[0])
+                name = QtGui.QTableWidgetItem(os.path.basename(self.filename[0]))
+                self.tableWidget.setItem(0,0,name)
+
                 self.im = cv2.imread(self.filename[0])
 
  def pic_set(self):

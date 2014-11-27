@@ -924,11 +924,14 @@
       <height>81</height>
      </rect>
     </property>
+    <property name="textElideMode">
+     <enum>Qt::ElideMiddle</enum>
+    </property>
     <property name="rowCount">
      <number>2</number>
     </property>
     <property name="columnCount">
-     <number>8</number>
+     <number>13</number>
     </property>
     <attribute name="horizontalHeaderDefaultSectionSize">
      <number>100</number>
@@ -946,32 +949,89 @@
     <row/>
     <column>
      <property name="text">
-      <string>File name</string>
+      <string>File Name</string>
      </property>
     </column>
     <column>
      <property name="text">
-      <string>area size</string>
+      <string>Sum</string>
      </property>
     </column>
     <column>
      <property name="text">
-      <string>count</string>
+      <string>Average</string>
      </property>
     </column>
     <column>
      <property name="text">
-      <string>average</string>
+      <string>Var</string>
      </property>
     </column>
     <column>
      <property name="text">
-      <string>median</string>
+      <string>Std</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Counts</string>
      </property>
     </column>
     <column/>
     <column/>
     <column/>
+    <column/>
+    <column/>
+    <column/>
+    <column/>
+    <item row="0" column="6">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="textAlignment">
+      <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+     </property>
+    </item>
+    <item row="0" column="7">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="textAlignment">
+      <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+     </property>
+    </item>
+    <item row="0" column="8">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="textAlignment">
+      <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+     </property>
+    </item>
+    <item row="1" column="6">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="textAlignment">
+      <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+     </property>
+    </item>
+    <item row="1" column="7">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="textAlignment">
+      <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+     </property>
+    </item>
+    <item row="1" column="8">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="textAlignment">
+      <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+     </property>
+    </item>
    </widget>
    <widget class="QLabel" name="label_18">
     <property name="geometry">
