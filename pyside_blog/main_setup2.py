@@ -139,11 +139,12 @@ SIGNAL("clicked()"), self.close_event)
         name = QtGui.QTableWidgetItem(os.path.basename(self.namelist[i]))
         self.tableWidget.setItem(0,0,name)
 	self.pic_set()
+        self.all_con = None
 
  def init_var(self):
 	self.all_cnt_area =None
 	self.all_cnt = None
-	self.all_con = None
+ 	self.all_con = None
 	self.cur_cnt = None
 	self.cur_cnt_number = None
 	self.cur_contour_area = None
@@ -192,15 +193,19 @@ SIGNAL("clicked()"), self.close_event)
         vals = self.size * vals
         _sum = round(np.sum(vals),3)
         average = round(np.mean(vals),3)
+        median = round(np.median(vals),3)
         var = round(np.var(vals),3)
         std = round(np.std(vals),3)
         count = len(vals)
+
         calc.append(vals)
+        calc.append(count)
         calc.append(_sum)
         calc.append(average)
+        calc.append(median)
         calc.append(var)
         calc.append(std)
-        calc.append(count)
+        
         return calc
 
  def table_set(self):
@@ -208,7 +213,7 @@ SIGNAL("clicked()"), self.close_event)
          return
      
      calc = self.result_calculate()
-     title = ["File Name","sum","average","var","std","counts"]
+     title = ["File Name","counts","sum","average","median","var","std"]
      num = int(len(calc))
      self.tableWidget.setHorizontalHeaderLabels(title)
      for i in np.arange(1,num,1):
@@ -332,7 +337,7 @@ SIGNAL("clicked()"), self.close_event)
 
 		if event.button() == QtCore.Qt.LeftButton:
 			if self.all_con is None :
-				pass
+				return
 			else :
 				self.pic_item.setImage(self.all_con)
 	
@@ -342,6 +347,8 @@ SIGNAL("clicked()"), self.close_event)
 	self.file_scrollbar.setValue(filename_pos)
 	self.file_scrollbar.setMaximum(files_len)
 	self.file_scrollbar.valueChanged.connect(self.cur_position)
+        
+
 
  def push_file_button(self):
 	 self.open_file()
@@ -518,7 +525,7 @@ SIGNAL("clicked()"), self.close_event)
 	if self.all_cnt is None :
 		pass
 	else:
-		for i ,cnt in enumerate(self.all_cnt):
+		for i ,cnt in zip(self.all_num,self.all_cnt):
 			in_out = cv2.pointPolygonTest(cnt,(self.curPos[0],self.curPos[1]),False)
 			if in_out == 1 or in_out == 0:
 				self.cur_contour = np.zeros_like(self.im)
@@ -610,11 +617,11 @@ SIGNAL("clicked()"), self.close_event)
 
  def erase_area(self):
 	 self.erase_num.append(self.cur_cnt_number)
-	 cou = pic_count()
-	 erased_mask_cv,self.cur_contour_area = cou.re_draw_contour(self.im,self.all_num,self.all_cnt,self.all_cnt_area,self.erase_num)
+
+	 count = pic_count()
+	 erased_mask_cv,self.cur_contour_area = count.re_draw_contour(self.im,self.all_num,self.all_cnt,self.all_cnt_area,self.erase_num)
 	 coor = coordinateForCv()
 	 erased_mask_qt = coor.cv2pyqtgraph(erased_mask_cv)
-
 	 self.open_or_add_pic(self.pyqt_pic,erased_mask_qt,0.7,0.7)
 	 self.all_con = self.add
 	 
