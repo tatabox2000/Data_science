@@ -486,7 +486,7 @@ SIGNAL("clicked()"), self.close_event)
 	 __x = self.pic_view.x()
 	 __y = self.pic_view.y()
 
-	 self.pic_view.setGeometry(QtCore.QRect(__x, __y, 512, 512))
+	 self.pic_view.setGeometry(QtCore.QRect(__x, __y, 551, 561))
 
 	 _view_x = self.pic_view.width()
 	 _view_y = self.pic_view.height()
