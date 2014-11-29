@@ -38,10 +38,11 @@ class separate_pic():
 			x1 = x2
 if __name__ == '__main__':
 	os.chdir(u"I:/picture/mills/Amill/")
-	pass_name= u"I:/picture/mills/Amill/A_1150_1.jpg"
-	name = os.path.basename(pass_name)
-	im = cv2.imread(pass_name)
-	sep = separate_pic()
-	x,y = sep.adjust_pic(im,9)
-	sep.sepalate_pic(x,y,9,name)
+	import glob
+	for pass_name in glob.glob(*.jpg):
+		name = os.path.basename(pass_name)
+		im = cv2.imread(pass_name)
+		sep = separate_pic()
+		x,y = sep.adjust_pic(im,3)
+		sep.sepalate_pic(x,y,3,name)
 
