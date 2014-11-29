@@ -267,7 +267,7 @@ SIGNAL("clicked()"), self.close_event)
         menu = QtGui.QMenu()
 	submenu = QtGui.QMenu()
 	submenu.setTitle("Contour menu")
-	if self.all_con != None: 
+	if self.all_con is not None: 
 		menu.addMenu(submenu)
         menu.addAction('Canny',self.make_canny)
 	menu.addAction('Fourier transform',self.FFT)
