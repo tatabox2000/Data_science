@@ -64,8 +64,7 @@ class pic_count:
 	 erased_mask = np.zeros_like(im)
 	 cnt_area = []
 	 for h,cnt,area in zip(all_num,all_cnt,all_cnt_area):
-		 
-		 if h  not in erase_num :
+                if h  not in erase_num :
 			 cv2.drawContours(erased_mask,[cnt],0,(0,255,255),-1)
 			 #print (np.sum(calc_mask_temp)/255)
 			 cnt_area.append(area)
@@ -73,7 +72,7 @@ class pic_count:
 			 #cv2.imshow("",calc_mask_temp)
 			 #cv2.waitKey(0)
 			 #cv2.destroyAllWindows()  
-		 else:
+		else:
 			 pass
 			 
 	 return erased_mask, cnt_area

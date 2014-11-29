@@ -55,7 +55,20 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
        	self.ui = Ui_Qt_CV_MainWindow()
 	self.setupUi(self)
 	
-	QtCore.QObject.connect(self.file_button, QtCore.SIGNAL("clicked()"), self.push_file_button)
+###########################################################
+# Table Settings
+###########################################################
+        vheader = QtGui.QHeaderView(QtCore.Qt.Orientation.Vertical)
+        vheader.setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        self.tableWidget.setVerticalHeader(vheader)
+        hheader = QtGui.QHeaderView(QtCore.Qt.Orientation.Horizontal)
+        hheader.setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        self.tableWidget.setHorizontalHeader(hheader)
+        #self.tableWidget.setHorizontalHeaderLabels(title)
+
+
+
+        QtCore.QObject.connect(self.file_button, QtCore.SIGNAL("clicked()"), self.push_file_button)
 	#QtCore.QObject.connect(self.exec_button,QtCore.SIGNAL("clicked()"),self.make_canny)
 	QtCore.QObject.connect(self.EBA_button,QtCore.SIGNAL("clicked()"),self.calc_eba)
 
@@ -123,13 +136,15 @@ SIGNAL("clicked()"), self.close_event)
 	i =  self.file_scrollbar.value()
 	self.im = cv2.imread(self.namelist[i])
 	self.file_edit.setText(self.namelist[i])
-
+        name = QtGui.QTableWidgetItem(os.path.basename(self.namelist[i]))
+        self.tableWidget.setItem(0,0,name)
 	self.pic_set()
+        self.all_con = None
 
  def init_var(self):
 	self.all_cnt_area =None
 	self.all_cnt = None
-	self.all_con = None
+ 	self.all_con = None
 	self.cur_cnt = None
 	self.cur_cnt_number = None
 	self.cur_contour_area = None
@@ -162,34 +177,73 @@ SIGNAL("clicked()"), self.close_event)
 		else:
 			erased_mask,cur_contour_area = count.mono_re_draw_contour(self.im,self.all_num,self.all_cnt,self.all_cnt_area,self.erase_num)
 			return erased_mask,cur_contour_area
+ def result_calculate(self):
+    if self.cur_contour_area is None:
+        if self.all_cnt_area is None:
+            return
+	else :
+	    vals = self.all_cnt_area
+    else:
+	vals = self.cur_contour_area
+    if vals == []:
+        return
+    else:
+        calc = []
+        vals = np.array(vals)
+        vals = self.size * vals
+        _sum = round(np.sum(vals),3)
+        average = round(np.mean(vals),3)
+        median = round(np.median(vals),3)
+        var = round(np.var(vals),3)
+        std = round(np.std(vals),3)
+        count = len(vals)
 
+        calc.append(vals)
+        calc.append(count)
+        calc.append(_sum)
+        calc.append(average)
+        calc.append(median)
+        calc.append(var)
+        calc.append(std)
+        
+        return calc
 
+ def table_set(self):
+     if self.cur_contour_area is None and self.all_cnt_area is None:
+         return
+     
+     calc = self.result_calculate()
+     title = ["File Name","counts","sum","average","median","var","std"]
+     num = int(len(calc))
+     self.tableWidget.setHorizontalHeaderLabels(title)
+     for i in np.arange(1,num,1):
+         item = QtGui.QTableWidgetItem(str(calc[i]))
+         self.tableWidget.setItem(0,i,item)
 
+         
+     
  def make_histogram(self):
-	 if self.cur_contour_area is None:
-		 if self.all_cnt_area is None:
-			 return
-		 else :
-			 vals = self.all_cnt_area
-	 else:
-		 vals = self.cur_contour_area
-	 if self.plt1 == None:
+     if self.cur_contour_area is None and self.all_cnt_area is None:
+         return
+     else:
+         calc = self.result_calculate()
+         if calc == None:
+             return
+     if self.plt1 == None:
 		 self.plt1 = self.hist_view.plotItem
 		 #self.plt1.clear()
-	 else:
+     else:
 		 self.plt1.clear()
-	 self.plt1.hideAxis('left')
-	 self.plt1.showAxis('right')
+         
+     self.plt1.hideAxis('left')
+     self.plt1.showAxis('right')
 
-	 #vals = np.hstack([np.random.normal(size=500), np.random.normal(size=260, loc=4)])
-	 y,x = np.histogram(vals,bins=100)
-	 curve = pg.PlotCurveItem(x, y, stepMode=True, fillLevel=0, brush=(0, 0, 255, 80))
-	 curve.rotate(90)
-	 self.plt1.addItem(curve)
-
- 
-
-
+     #vals = np.hstack([np.random.normal(size=500), np.random.normal(size=260, loc=4)])
+     y,x = np.histogram(calc[0],bins=100)
+     curve = pg.PlotCurveItem(x, y, stepMode=True, fillLevel=0, brush=(0, 0, 255, 80))
+     curve.rotate(90)
+     self.plt1.addItem(curve)
+     self.table_set()
  def make_scale(sefl,im,length=10,from_edge = 5,thick = 1,hight = 4,font_size = 0.6 ,pix = 10):
 	w = im.shape[1] *2
 	h = im.shape[0] *2
@@ -283,7 +337,7 @@ SIGNAL("clicked()"), self.close_event)
 
 		if event.button() == QtCore.Qt.LeftButton:
 			if self.all_con is None :
-				pass
+				return
 			else :
 				self.pic_item.setImage(self.all_con)
 	
@@ -293,6 +347,8 @@ SIGNAL("clicked()"), self.close_event)
 	self.file_scrollbar.setValue(filename_pos)
 	self.file_scrollbar.setMaximum(files_len)
 	self.file_scrollbar.valueChanged.connect(self.cur_position)
+        
+
 
  def push_file_button(self):
 	 self.open_file()
@@ -308,6 +364,9 @@ SIGNAL("clicked()"), self.close_event)
 		if self.plt1 is not None:
 			self.plt1.clear()
 		self.file_edit.setText(self.filename[0])
+                name = QtGui.QTableWidgetItem(os.path.basename(self.filename[0]))
+                self.tableWidget.setItem(0,0,name)
+
                 self.im = cv2.imread(self.filename[0])
 
  def pic_set(self):
@@ -427,7 +486,7 @@ SIGNAL("clicked()"), self.close_event)
 	 __x = self.pic_view.x()
 	 __y = self.pic_view.y()
 
-	 self.pic_view.setGeometry(QtCore.QRect(__x, __y, 512, 512))
+	 self.pic_view.setGeometry(QtCore.QRect(__x, __y, 551, 561))
 
 	 _view_x = self.pic_view.width()
 	 _view_y = self.pic_view.height()
@@ -466,7 +525,7 @@ SIGNAL("clicked()"), self.close_event)
 	if self.all_cnt is None :
 		pass
 	else:
-		for i ,cnt in enumerate(self.all_cnt):
+		for i ,cnt in zip(self.all_num,self.all_cnt):
 			in_out = cv2.pointPolygonTest(cnt,(self.curPos[0],self.curPos[1]),False)
 			if in_out == 1 or in_out == 0:
 				self.cur_contour = np.zeros_like(self.im)
@@ -558,11 +617,11 @@ SIGNAL("clicked()"), self.close_event)
 
  def erase_area(self):
 	 self.erase_num.append(self.cur_cnt_number)
-	 cou = pic_count()
-	 erased_mask_cv,self.cur_contour_area = cou.re_draw_contour(self.im,self.all_num,self.all_cnt,self.all_cnt_area,self.erase_num)
+
+	 count = pic_count()
+	 erased_mask_cv,self.cur_contour_area = count.re_draw_contour(self.im,self.all_num,self.all_cnt,self.all_cnt_area,self.erase_num)
 	 coor = coordinateForCv()
 	 erased_mask_qt = coor.cv2pyqtgraph(erased_mask_cv)
-
 	 self.open_or_add_pic(self.pyqt_pic,erased_mask_qt,0.7,0.7)
 	 self.all_con = self.add
 	 
