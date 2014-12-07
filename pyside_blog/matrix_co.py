@@ -67,6 +67,7 @@ class coordinateForCv:
 	edge[0:edge_pix,:] =255
 	edge[bottom-edge_pix:bottom,:] =255
 	edge_bool = (edge > 254)
+	edgeSum = np.sum(edge)/255
 	
 	for h,cnt,area in zip(all_num,all_cnt,all_cnt_area):
 		area_mask = np.zeros((im.shape[0],im.shape[1]),np.uint8)
@@ -78,13 +79,13 @@ class coordinateForCv:
 		if area > cnt_edge:
 			edge_num.append(h)
 			edge_cnt.append(cnt)
-			edge_area.append(area)
+			edge_area.append(cnt_edge)
 		elif area == cnt_edge :
 			no_edge_all_num.append(h)
 			no_edge_all_cnt.append(cnt)
 			no_edge_all_area.append(area)
 	
-	return no_edge_all_num,no_edge_all_cnt,no_edge_all_area,edge_num,edge_cnt,edge_area
+	return no_edge_all_num,no_edge_all_cnt,no_edge_all_area,edge_num,edge_cnt,edge_area,edgeSum
 	print len(no_edge_all_num),len(edge_cnt)
 
  def contour_data(self,cnt):

@@ -159,6 +159,8 @@ SIGNAL("clicked()"), self.close_event)
 	self.filename_pos = None
 	self.imgray_mask = None
 	self.all_cnt_area_with_edge = None
+	self.edgeSum = None
+
  def check_edge(self):
 	 if self.all_num == None:
 		 pass
@@ -170,7 +172,7 @@ SIGNAL("clicked()"), self.close_event)
 			self.all_area_with_edge = self.all_cnt
 			self.imgray_mask_with_edge = self.imgray_mask
 			coordinate = coordinateForCv()
-			self.all_num,self.all_cnt,self.all_cnt_area,self.edge_num,self.edge_cnt,self.edge_area =coordinate.check_edge(self.im,self.all_num,self.all_cnt,self.all_cnt_area)
+			self.all_num,self.all_cnt,self.all_cnt_area,self.edge_num,self.edge_cnt,self.edge_area,self.edgeSum =coordinate.check_edge(self.im,self.all_num,self.all_cnt,self.all_cnt_area)
 
 			erased_mask,cur_contour_area = count.mono_re_draw_contour(self.im,self.all_num,self.all_cnt,self.all_cnt_area,self.erase_num)
 			return erased_mask,cur_contour_area
@@ -189,13 +191,14 @@ SIGNAL("clicked()"), self.close_event)
         return
     else:
         calc = []
-        vals = np.array(vals)
-        vals = self.size * vals
-        _sum = round(np.sum(vals),3)
-        average = round(np.mean(vals),3)
-        median = round(np.median(vals),3)
-        var = round(np.var(vals),3)
-        std = round(np.std(vals),3)
+	#areavals = np.array(vals)
+
+        sizevals = self.size * np.array(vals)
+        _sum = round(np.sum(sizevals),3)
+        average = round(np.mean(sizevals),3)
+        median = round(np.median(sizevals),3)
+        var = round(np.var(sizevals),3)
+        std = round(np.std(sizevals),3)
         count = len(vals)
 
         calc.append(vals)
@@ -205,7 +208,19 @@ SIGNAL("clicked()"), self.close_event)
         calc.append(median)
         calc.append(var)
         calc.append(std)
-        
+	if self.edgeSum is None:
+	    print "None Edge"
+	    ppm = np.sum(vals)*100000/(self.im.shape[0]*self.im.shape[1])
+	    mperm = round(1/self.size * np.sum(vals)*100000/(self.im.shape[0]*self.im.shape[1]),1)
+	    calc.append(ppm)
+	    calc.append(mperm)
+    	else:
+	    print "Eject Edge"
+	    ppm =self.size * np.sum(vals)*100000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum))
+	    mperm = round(1/self.size * np.sum(vals)*100000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum)),1)
+	    calc.append(ppm)
+	    calc.append(mperm)
+
         return calc
 
  def table_set(self):
@@ -213,7 +228,7 @@ SIGNAL("clicked()"), self.close_event)
          return
      
      calc = self.result_calculate()
-     title = ["File Name","counts","sum","average","median","var","std"]
+     title = ["File Name","counts","sum","average","median","var","std","ppm",u"micro_m/m2"]
      num = int(len(calc))
      self.tableWidget.setHorizontalHeaderLabels(title)
      for i in np.arange(1,num,1):
