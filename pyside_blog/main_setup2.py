@@ -210,14 +210,14 @@ SIGNAL("clicked()"), self.close_event)
         calc.append(std)
 	if self.edgeSum is None:
 	    print "None Edge"
-	    ppm = np.sum(vals)*100000/(self.im.shape[0]*self.im.shape[1])
-	    mperm = round(1/self.size * np.sum(vals)*100000/(self.im.shape[0]*self.im.shape[1]),1)
+	    ppm = np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1])
+	    mperm = round(1/self.size * np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]),1)
 	    calc.append(ppm)
 	    calc.append(mperm)
     	else:
 	    print "Eject Edge"
-	    ppm =self.size * np.sum(vals)*100000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum))
-	    mperm = round(1/self.size * np.sum(vals)*100000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum)),1)
+	    ppm =self.size * np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum))
+	    mperm = round(1/self.size * np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum)),1)
 	    calc.append(ppm)
 	    calc.append(mperm)
 
