@@ -74,7 +74,8 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
 
 	self.init_var()
 	self.pic_item = None
-	self.size = 0.0361
+	#self.size = 0.0361
+	self.size = 2.15
 	self.imgray = None
 	self.sub_vb = None
 	self.vb = None
@@ -104,7 +105,7 @@ SIGNAL("clicked()"), self.close_event)
 	QtCore.QObject.connect(self.max_area_edit, QtCore.SIGNAL("textEdited(const QString&)"), self.change_max_area_edit)
 	QtCore.QObject.connect(self.min_area_edit, QtCore.SIGNAL("textEdited(const QString&)"), self.change_min_area_edit)
 	QtCore.QObject.connect( self.color_combo, QtCore.SIGNAL('activated(int)'), self.setCurrentIndex)
-	QtCore.QObject.connect( self.color_combo, QtCore.SIGNAL('activated(int)'), self.setCurrentIndex)
+	QtCore.QObject.connect( self.save_mode_combo, QtCore.SIGNAL('activated(int)'), self.set_save_modeIndex)
 	QtCore.QObject.connect( self.smooth_combo, QtCore.SIGNAL('activated(int)'), self.setsmooth)
 	#QtCore.QObject.connect(self.threshold1_edit, QtCore.SIGNAL("textEdited(const QString&)"), self.change_text)
 	QtCore.QObject.connect(self.size_edit, QtCore.SIGNAL("textEdited(const QString&)"), self.change_size_edit)
@@ -210,13 +211,13 @@ SIGNAL("clicked()"), self.close_event)
         calc.append(std)
 	if self.edgeSum is None:
 	    print "None Edge"
-	    ppm = round(np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]),1)
+	    ppm = round(np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]),0)
 	    mperm = ppm * 1000
 	    calc.append(ppm)
 	    calc.append(mperm)
     	else:
 	    print "Eject Edge"
-	    ppm =round(np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum)))
+	    ppm =round(np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum)),0)
 	    mperm = ppm * 1000
 	    calc.append(ppm)
 	    calc.append(mperm)
@@ -436,6 +437,15 @@ SIGNAL("clicked()"), self.close_event)
  ###############################################
  # check box & combobox
  ###############################################
+ def set_save_modeIndex(self):
+	if self.save_mode_combo.currentIndex () == 0:
+		save = 'CSV_hist'
+		return save
+	if self.save_mode_combo.currentIndex () == 1:
+		save = 'CSV_count'
+		return save
+
+
  def setCurrentIndex(self):
 	if self.color_combo.currentIndex () == 0:
 		color = 'gray'
@@ -480,12 +490,6 @@ SIGNAL("clicked()"), self.close_event)
 	if self.extention_combo.currentIndex () == 2:
 		smooth = '*.tiff'
 		return smooth
-#	if self.extention_combo.currentIndex () == 3:
-#		smooth = 'medianBlur'
-#		return smooth
-#	if self.extention_combo.currentIndex () == 4:
-#		smooth = 'Blur'
-#		return smooth
 
  
  def View_or_Image(self):
@@ -562,22 +566,25 @@ SIGNAL("clicked()"), self.close_event)
 	 self.all_con = None
 	 self.all_cnt = None
  def push_execute_box(self):
-	 folder = QtGui.QFileDialog.getExistingDirectory(self,'Open Dorectory',os.path.expanduser('~'))
-	 import glob
-	 ext = self.setextention()
-	 os.chdir(folder)
-	 calc_cnt =[]
-	 for name in glob.glob(ext):
-		 self.im = cv2.imread(name)
-		 cnt = self.execute(self.im)
-		 calc_cnt.extend(cnt)
-	 import codecs
-	 import csv
-	 with codecs.open("pic.csv",'ab','cp932') as pic:
-		 csvWriter = csv.writer(pic)
-		 csvWriter.writerow(calc_cnt)  
-	 print calc_cnt
-
+	 save = self.set_save_modeIndex()
+	 if save == 'CSV_hist':
+		folder = QtGui.QFileDialog.getExistingDirectory(self,'Open Dorectory',os.path.expanduser('~'))
+		import glob
+		ext = self.setextention()
+		os.chdir(folder)
+		calc_cnt =[]
+		for name in glob.glob(ext):
+			 self.im = cv2.imread(name)
+			 cnt = self.execute(self.im)
+			 calc_cnt.extend(cnt)
+		import codecs
+		import csv
+		with codecs.open("pic.csv",'ab','cp932') as pic:
+			 csvWriter = csv.writer(pic)
+			 csvWriter.writerow(calc_cnt)  
+		print calc_cnt
+	 if save == 'CSV_count':
+		 pass
 
 
  def execute(self,im):
