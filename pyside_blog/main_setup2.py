@@ -567,11 +567,12 @@ SIGNAL("clicked()"), self.close_event)
 	 self.all_cnt = None
  def push_execute_box(self):
 	 save = self.set_save_modeIndex()
+	 folder = QtGui.QFileDialog.getExistingDirectory(self,'Open Dorectory',os.path.expanduser('~'))
+	 import glob
+	 ext = self.setextention()
+	 os.chdir(folder)
+
 	 if save == 'CSV_hist':
-		folder = QtGui.QFileDialog.getExistingDirectory(self,'Open Dorectory',os.path.expanduser('~'))
-		import glob
-		ext = self.setextention()
-		os.chdir(folder)
 		calc_cnt =[]
 		for name in glob.glob(ext):
 			 self.im = cv2.imread(name)
@@ -584,8 +585,32 @@ SIGNAL("clicked()"), self.close_event)
 			 csvWriter.writerow(calc_cnt)  
 		print calc_cnt
 	 if save == 'CSV_count':
-		 pass
+		import codecs
+		import csv
+		with codecs.open("pic.csv",'ab','cp932') as pic:
+			csvWriter = csv.writer(pic)
+			for name in glob.glob(ext):
+				self.im = cv2.imread(name)
 
+		 		self.exec_each_pic(self.im)
+				print 'ok'
+
+ def exec_each_pic(self,im):
+	 self.init_var()
+ 	 color = self.setCurrentIndex()
+	 count = pic_count()
+	 _imgray = count.color_filter(im,color)
+	 smooth = self.setsmooth()
+	 blur = count.smoothing(_imgray,smooth)
+	 imgray,im_color = count.gray_range_select(_imgray,self.smallRange,self.largeRange) 
+	 self.imgray_mask,self.all_num,self.all_cnt,self.all_cnt_area = count.all_contour(imgray,self.maxArea,self.minArea)
+
+	 self.imgray_mask,self.all_cnt_area = self.check_edge()
+	 coor = coordinateForCv()
+	 self.cv_img = coor.cv2pyqtgraph(self.imgray_mask)
+	 list = np.array(self.all_cnt_area)
+	 calc = self.result_calculate()
+     	 title = ["File Name","counts","sum","average","median","var","std","ppm",u"micro_m/m2"]
 
  def execute(self,im):
 	 self.init_var()
