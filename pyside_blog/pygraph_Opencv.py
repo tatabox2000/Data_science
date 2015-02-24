@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pygraph_Opencv.ui'
 #
-# Created: Mon Dec 01 12:41:45 2014
+# Created: Tue Feb 24 21:02:44 2015
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -403,7 +403,6 @@ class Ui_Qt_CV_MainWindow(object):
         self.save_mode_combo.setObjectName("save_mode_combo")
         self.save_mode_combo.addItem("")
         self.save_mode_combo.addItem("")
-        self.save_mode_combo.addItem("")
         self.form_view_or_image_2 = QtGui.QCheckBox(self.centralwidget)
         self.form_view_or_image_2.setGeometry(QtCore.QRect(20, 700, 141, 19))
         self.form_view_or_image_2.setObjectName("form_view_or_image_2")
@@ -491,9 +490,8 @@ class Ui_Qt_CV_MainWindow(object):
         self.tableWidget.setSortingEnabled(False)
         self.tableWidget.setSortingEnabled(__sortingEnabled)
         self.label_18.setText(QtGui.QApplication.translate("Qt_CV_MainWindow", "Save Mode", None, QtGui.QApplication.UnicodeUTF8))
-        self.save_mode_combo.setItemText(0, QtGui.QApplication.translate("Qt_CV_MainWindow", "None", None, QtGui.QApplication.UnicodeUTF8))
-        self.save_mode_combo.setItemText(1, QtGui.QApplication.translate("Qt_CV_MainWindow", "CSV:Distribution(Histogram)", None, QtGui.QApplication.UnicodeUTF8))
-        self.save_mode_combo.setItemText(2, QtGui.QApplication.translate("Qt_CV_MainWindow", "CSV:Count & Size", None, QtGui.QApplication.UnicodeUTF8))
+        self.save_mode_combo.setItemText(0, QtGui.QApplication.translate("Qt_CV_MainWindow", "CSV:Distribution(Histogram)", None, QtGui.QApplication.UnicodeUTF8))
+        self.save_mode_combo.setItemText(1, QtGui.QApplication.translate("Qt_CV_MainWindow", "CSV:Count & Size", None, QtGui.QApplication.UnicodeUTF8))
         self.form_view_or_image_2.setText(QtGui.QApplication.translate("Qt_CV_MainWindow", "Watershed", None, QtGui.QApplication.UnicodeUTF8))
         self.menuFile.setTitle(QtGui.QApplication.translate("Qt_CV_MainWindow", "File", None, QtGui.QApplication.UnicodeUTF8))
         self.menuTool.setTitle(QtGui.QApplication.translate("Qt_CV_MainWindow", "Tool", None, QtGui.QApplication.UnicodeUTF8))

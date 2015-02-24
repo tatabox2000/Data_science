@@ -214,13 +214,13 @@ SIGNAL("clicked()"), self.close_event)
 	    ppm = round(np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]),0)
 	    mperm = ppm * 1000
 	    calc.append(ppm)
-	    calc.append(mperm)
+	    #calc.append(mperm)
     	else:
 	    print "Eject Edge"
 	    ppm =round(np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum)),0)
 	    mperm = ppm * 1000
 	    calc.append(ppm)
-	    calc.append(mperm)
+	    #calc.append(mperm)
 
         return calc
 
@@ -229,7 +229,7 @@ SIGNAL("clicked()"), self.close_event)
          return
      
      calc = self.result_calculate()
-     title = ["File Name","counts","sum","average","median","var","std","ppm",u"micro_m/m2"]
+     title = ["File Name","counts","sum","average","median","var","std","ppm"]
      num = int(len(calc))
      self.tableWidget.setHorizontalHeaderLabels(title)
      for i in np.arange(1,num,1):
@@ -568,6 +568,8 @@ SIGNAL("clicked()"), self.close_event)
  def push_execute_box(self):
 	 save = self.set_save_modeIndex()
 	 folder = QtGui.QFileDialog.getExistingDirectory(self,'Open Dorectory',os.path.expanduser('~'))
+	 if folder == u'':
+		 return
 	 import glob
 	 ext = self.setextention()
 	 os.chdir(folder)
@@ -580,26 +582,34 @@ SIGNAL("clicked()"), self.close_event)
 			 calc_cnt.extend(cnt)
 		import codecs
 		import csv
-		with codecs.open("pic.csv",'ab','cp932') as pic:
+		fol_name = ["Folder place:", folder ]
+		with codecs.open("all_pic_hist.csv",'ab','cp932') as pic:
 			 csvWriter = csv.writer(pic)
+			 csvWriter.writerow(fol_name)
 			 csvWriter.writerow(calc_cnt)  
-		print calc_cnt
 	 if save == 'CSV_count':
 		import codecs
 		import csv
-
-                csvtitle = ["File Name","counts","sum","average","median","var","std","ppm",u"micro_m/m2"]
-		with codecs.open("pic.csv",'ab','cp932') as pic:
+		settings = ["1pixel Size","Max threshold","Min threshold","Max Area[pix]","Min Area[pix]"]
+		settings_num = [self.size,self.largeRange,self.smallRange,self.maxArea,self.minArea]
+                csvtitle = ["File Name","counts","sum","average","median","var","std","ppm"]
+		with codecs.open("pic_count.csv",'w','cp932') as pic:
 			csvWriter = csv.writer(pic)
+			csvWriter.writerow(settings)
+			csvWriter.writerow(settings_num) 
+			csvWriter.writerow(settings_num) 
                         csvWriter.writerow(csvtitle)  
 			for name in glob.glob(ext):
 				self.im = cv2.imread(name)
                                 print name 
-                                #print self.im
                                 calc = self.exec_each_pic(self.im)
-                                calc.insert(1,name)
+				if calc == None:
+					pass
+				else:
+					calc.insert(0,name)
+					csvWriter.writerow(calc) 
 				print calc
-                                print ok
+                                
 
  def exec_each_pic(self,im):
 	 self.init_var()
@@ -608,17 +618,16 @@ SIGNAL("clicked()"), self.close_event)
 	 _imgray = count.color_filter(im,color)
 	 smooth = self.setsmooth()
 	 blur = count.smoothing(_imgray,smooth)
-	 imgray,im_color = count.gray_range_select(_imgray,self.smallRange,self.largeRange) 
+	 imgray,im_color = count.gray_range_select(blur,self.smallRange,self.largeRange) 
 	 self.imgray_mask,self.all_num,self.all_cnt,self.all_cnt_area = count.all_contour(imgray,self.maxArea,self.minArea)
-
 	 self.imgray_mask,self.all_cnt_area = self.check_edge()
 	 coor = coordinateForCv()
 	 self.cv_img = coor.cv2pyqtgraph(self.imgray_mask)
-	 list = np.array(self.all_cnt_area)
 	 calc = self.result_calculate()
-
-         del calc[0]
-         print calc
+	 if calc == None:
+		 calc = ['0','0','0','0','0','0','0']
+	 else:
+		 del calc[0]
          return calc
  def execute(self,im):
 	 self.init_var()
