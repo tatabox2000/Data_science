@@ -587,13 +587,19 @@ SIGNAL("clicked()"), self.close_event)
 	 if save == 'CSV_count':
 		import codecs
 		import csv
+
+                csvtitle = ["File Name","counts","sum","average","median","var","std","ppm",u"micro_m/m2"]
 		with codecs.open("pic.csv",'ab','cp932') as pic:
 			csvWriter = csv.writer(pic)
+                        csvWriter.writerow(csvtitle)  
 			for name in glob.glob(ext):
 				self.im = cv2.imread(name)
-
-		 		self.exec_each_pic(self.im)
-				print 'ok'
+                                print name 
+                                #print self.im
+                                calc = self.exec_each_pic(self.im)
+                                calc.insert(1,name)
+				print calc
+                                print ok
 
  def exec_each_pic(self,im):
 	 self.init_var()
@@ -610,8 +616,10 @@ SIGNAL("clicked()"), self.close_event)
 	 self.cv_img = coor.cv2pyqtgraph(self.imgray_mask)
 	 list = np.array(self.all_cnt_area)
 	 calc = self.result_calculate()
-     	 title = ["File Name","counts","sum","average","median","var","std","ppm",u"micro_m/m2"]
 
+         del calc[0]
+         print calc
+         return calc
  def execute(self,im):
 	 self.init_var()
  	 color = self.setCurrentIndex()
