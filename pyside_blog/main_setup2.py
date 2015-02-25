@@ -66,8 +66,6 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
         self.tableWidget.setHorizontalHeader(hheader)
         #self.tableWidget.setHorizontalHeaderLabels(title)
 
-
-
         QtCore.QObject.connect(self.file_button, QtCore.SIGNAL("clicked()"), self.push_file_button)
 	#QtCore.QObject.connect(self.exec_button,QtCore.SIGNAL("clicked()"),self.make_canny)
 	QtCore.QObject.connect(self.EBA_button,QtCore.SIGNAL("clicked()"),self.calc_eba)
@@ -75,7 +73,7 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
 	self.init_var()
 	self.pic_item = None
 	#self.size = 0.0361
-	self.size = 2.15
+	self.size = 81
 	self.imgray = None
 	self.sub_vb = None
 	self.vb = None
@@ -122,9 +120,10 @@ SIGNAL("clicked()"), self.close_event)
 	#self.form_view_or_image.stateChanged.connect(self.open_or_add_pic)
  def change_size_edit(self):
 	self.size = float(self.size_edit.text())
+        self.size = self.size * self.size
+        print self.size
  def calc_eba(self):
 	if self.eject_edge_or_not.isChecked():
-	
 		coor = coordinateForCv()
 		coor.eba_calc(self.all_num_with_edge,self.all_cnt_with_edge,self.all_cnt_area_with_edge,self.imgray_mask,self.imgray)
 	else:
@@ -193,7 +192,6 @@ SIGNAL("clicked()"), self.close_event)
     else:
         calc = []
 	#areavals = np.array(vals)
-
         sizevals = self.size * np.array(vals)
         _sum = round(np.sum(sizevals),3)
         average = round(np.mean(sizevals),3)
@@ -235,8 +233,6 @@ SIGNAL("clicked()"), self.close_event)
      for i in np.arange(1,num,1):
          item = QtGui.QTableWidgetItem(str(calc[i]))
          self.tableWidget.setItem(0,i,item)
-
-         
      
  def make_histogram(self):
      if self.cur_contour_area is None and self.all_cnt_area is None:
@@ -363,8 +359,6 @@ SIGNAL("clicked()"), self.close_event)
 	self.file_scrollbar.setValue(filename_pos)
 	self.file_scrollbar.setMaximum(files_len)
 	self.file_scrollbar.valueChanged.connect(self.cur_position)
-        
-
 
  def push_file_button(self):
 	 self.open_file()
@@ -382,7 +376,6 @@ SIGNAL("clicked()"), self.close_event)
 		self.file_edit.setText(self.filename[0])
                 name = QtGui.QTableWidgetItem(os.path.basename(self.filename[0]))
                 self.tableWidget.setItem(0,0,name)
-
                 self.im = cv2.imread(self.filename[0])
 
  def pic_set(self):
@@ -396,7 +389,6 @@ SIGNAL("clicked()"), self.close_event)
 		#cv2.imshow("",self.imgray)
 		#cv2.waitKey(0)
 		#cv2.destroyAllWindows()
-
 	else:
 		self.imgray = self.im
 	coor = coordinateForCv()
@@ -445,7 +437,6 @@ SIGNAL("clicked()"), self.close_event)
 		save = 'CSV_count'
 		return save
 
-
  def setCurrentIndex(self):
 	if self.color_combo.currentIndex () == 0:
 		color = 'gray'
@@ -490,7 +481,6 @@ SIGNAL("clicked()"), self.close_event)
 	if self.extention_combo.currentIndex () == 2:
 		smooth = '*.tiff'
 		return smooth
-
  
  def View_or_Image(self):
 	if self.form_view_or_image.isChecked():
@@ -556,7 +546,6 @@ SIGNAL("clicked()"), self.close_event)
 				self.open_or_add_pic(self.pyqt_pic,self.cv_img,0.2,1)
 			else :
 				pass
-
  def clear(self):
 	 self.init_var()
 	 self.vb.clear()
@@ -597,7 +586,6 @@ SIGNAL("clicked()"), self.close_event)
 			csvWriter = csv.writer(pic)
 			csvWriter.writerow(settings)
 			csvWriter.writerow(settings_num) 
-			csvWriter.writerow(settings_num) 
                         csvWriter.writerow(csvtitle)  
 			for name in glob.glob(ext):
 				self.im = cv2.imread(name)
@@ -609,7 +597,6 @@ SIGNAL("clicked()"), self.close_event)
 					calc.insert(0,name)
 					csvWriter.writerow(calc) 
 				print calc
-                                
 
  def exec_each_pic(self,im):
 	 self.init_var()
@@ -677,7 +664,6 @@ SIGNAL("clicked()"), self.close_event)
 	 self.open_or_add_pic(self.pyqt_pic,self.all_mask,0.7,0.7)
  	 self.make_histogram()
 	 self.all_con = self.add
-
 
  def erase_area(self):
 	 self.erase_num.append(self.cur_cnt_number)
