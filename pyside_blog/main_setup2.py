@@ -75,7 +75,8 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
 	self.init_var()
 	self.pic_item = None
 	#self.size = 0.0361
-	self.size = 2.15
+	#self.size = 2.15
+	self.size = int(self.size_edit.text())
 	self.imgray = None
 	self.sub_vb = None
 	self.vb = None
@@ -194,7 +195,7 @@ SIGNAL("clicked()"), self.close_event)
         calc = []
 	#areavals = np.array(vals)
 
-        sizevals = self.size * np.array(vals)
+        sizevals = self.size * self.size * np.array(vals)
         _sum = round(np.sum(sizevals),3)
         average = round(np.mean(sizevals),3)
         median = round(np.median(sizevals),3)
@@ -591,7 +592,7 @@ SIGNAL("clicked()"), self.close_event)
 		import codecs
 		import csv
 		settings = ["1pixel Size","Max threshold","Min threshold","Max Area[pix]","Min Area[pix]"]
-		settings_num = [self.size,self.largeRange,self.smallRange,self.maxArea,self.minArea]
+		settings_num = [self.size * self.size,self.largeRange,self.smallRange,self.maxArea,self.minArea]
                 csvtitle = ["File Name","counts","sum","average","median","var","std","ppm"]
 		with codecs.open("pic_count.csv",'w','cp932') as pic:
 			csvWriter = csv.writer(pic)
@@ -610,6 +611,20 @@ SIGNAL("clicked()"), self.close_event)
 					csvWriter.writerow(calc) 
 				print calc
                                 
+ def pixcel_separate(self):
+##########################
+# r1 = 250/2.0
+# over100 = np.pi* r1**2
+# r2 = 100/2
+# over250 = np.pi*r1**2
+##########################
+  over100 = 7853.981633974483
+  over250 = 49087.385212340516
+  import math
+  over100_pix = math.ceil(over100/(self.size*self.size))
+  over250_pix = math.ceil(over250/(self.size*self.size))
+
+
 
  def exec_each_pic(self,im):
 	 self.init_var()
@@ -648,7 +663,7 @@ SIGNAL("clicked()"), self.close_event)
 	 #self.all_mask[imgray_mask_bool]=(255,255,0)
 	 area = []
 	 for i  in self.all_cnt_area:
-		 j = self.size *float(i)
+		 j = self.size * self.size * float(i)
 		 area.append(j)
 	 #print area
 	 return area
