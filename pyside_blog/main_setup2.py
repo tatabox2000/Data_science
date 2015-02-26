@@ -66,8 +66,6 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
         self.tableWidget.setHorizontalHeader(hheader)
         #self.tableWidget.setHorizontalHeaderLabels(title)
 
-
-
         QtCore.QObject.connect(self.file_button, QtCore.SIGNAL("clicked()"), self.push_file_button)
 	#QtCore.QObject.connect(self.exec_button,QtCore.SIGNAL("clicked()"),self.make_canny)
 	QtCore.QObject.connect(self.EBA_button,QtCore.SIGNAL("clicked()"),self.calc_eba)
@@ -123,9 +121,10 @@ SIGNAL("clicked()"), self.close_event)
 	#self.form_view_or_image.stateChanged.connect(self.open_or_add_pic)
  def change_size_edit(self):
 	self.size = float(self.size_edit.text())
+        self.size = self.size * self.size
+        print self.size
  def calc_eba(self):
 	if self.eject_edge_or_not.isChecked():
-	
 		coor = coordinateForCv()
 		coor.eba_calc(self.all_num_with_edge,self.all_cnt_with_edge,self.all_cnt_area_with_edge,self.imgray_mask,self.imgray)
 	else:
@@ -194,7 +193,6 @@ SIGNAL("clicked()"), self.close_event)
     else:
         calc = []
 	#areavals = np.array(vals)
-
         sizevals = self.size * self.size * np.array(vals)
         _sum = round(np.sum(sizevals),3)
         average = round(np.mean(sizevals),3)
@@ -236,8 +234,6 @@ SIGNAL("clicked()"), self.close_event)
      for i in np.arange(1,num,1):
          item = QtGui.QTableWidgetItem(str(calc[i]))
          self.tableWidget.setItem(0,i,item)
-
-         
      
  def make_histogram(self):
      if self.cur_contour_area is None and self.all_cnt_area is None:
@@ -364,8 +360,6 @@ SIGNAL("clicked()"), self.close_event)
 	self.file_scrollbar.setValue(filename_pos)
 	self.file_scrollbar.setMaximum(files_len)
 	self.file_scrollbar.valueChanged.connect(self.cur_position)
-        
-
 
  def push_file_button(self):
 	 self.open_file()
@@ -383,7 +377,6 @@ SIGNAL("clicked()"), self.close_event)
 		self.file_edit.setText(self.filename[0])
                 name = QtGui.QTableWidgetItem(os.path.basename(self.filename[0]))
                 self.tableWidget.setItem(0,0,name)
-
                 self.im = cv2.imread(self.filename[0])
 
  def pic_set(self):
@@ -397,7 +390,6 @@ SIGNAL("clicked()"), self.close_event)
 		#cv2.imshow("",self.imgray)
 		#cv2.waitKey(0)
 		#cv2.destroyAllWindows()
-
 	else:
 		self.imgray = self.im
 	coor = coordinateForCv()
@@ -446,7 +438,6 @@ SIGNAL("clicked()"), self.close_event)
 		save = 'CSV_count'
 		return save
 
-
  def setCurrentIndex(self):
 	if self.color_combo.currentIndex () == 0:
 		color = 'gray'
@@ -491,7 +482,6 @@ SIGNAL("clicked()"), self.close_event)
 	if self.extention_combo.currentIndex () == 2:
 		smooth = '*.tiff'
 		return smooth
-
  
  def View_or_Image(self):
 	if self.form_view_or_image.isChecked():
@@ -557,7 +547,6 @@ SIGNAL("clicked()"), self.close_event)
 				self.open_or_add_pic(self.pyqt_pic,self.cv_img,0.2,1)
 			else :
 				pass
-
  def clear(self):
 	 self.init_var()
 	 self.vb.clear()
@@ -598,12 +587,10 @@ SIGNAL("clicked()"), self.close_event)
 			csvWriter = csv.writer(pic)
 			csvWriter.writerow(settings)
 			csvWriter.writerow(settings_num) 
-			csvWriter.writerow(settings_num) 
                         csvWriter.writerow(csvtitle)  
 			for name in glob.glob(ext):
 				self.im = cv2.imread(name)
-                                print name 
-                                calc = self.exec_each_pic(self.im)
+                                calc = self.exec_each_pic(self.im,name)
 				if calc == None:
 					pass
 				else:
@@ -626,7 +613,19 @@ SIGNAL("clicked()"), self.close_event)
 
 
 
- def exec_each_pic(self,im):
+ def save_picture(self,im,name):
+         mask = self.imgray_mask == 255
+         im_mask_color = np.zeros_like(im)
+         im_mask_color[mask]= (0,0,255)
+         alpha = 1.0
+         beta = 0.8
+         add = cv2.addWeighted(im,alpha,im_mask_color,beta,0)
+         name2 = "contour_" + name
+         cv2.imwrite(name2,add)
+         return add
+
+
+ def exec_each_pic(self,im,name):
 	 self.init_var()
  	 color = self.setCurrentIndex()
 	 count = pic_count()
@@ -636,8 +635,13 @@ SIGNAL("clicked()"), self.close_event)
 	 imgray,im_color = count.gray_range_select(blur,self.smallRange,self.largeRange) 
 	 self.imgray_mask,self.all_num,self.all_cnt,self.all_cnt_area = count.all_contour(imgray,self.maxArea,self.minArea)
 	 self.imgray_mask,self.all_cnt_area = self.check_edge()
-	 coor = coordinateForCv()
-	 self.cv_img = coor.cv2pyqtgraph(self.imgray_mask)
+         if self.save_pic_check.isChecked():
+            add = self.save_picture(im,name)  
+
+            #cv2.imshow("",add)
+	    #cv2.waitKey(0)
+	    #cv2.destroyAllWindows() 
+
 	 calc = self.result_calculate()
 	 if calc == None:
 		 calc = ['0','0','0','0','0','0','0']
@@ -692,7 +696,6 @@ SIGNAL("clicked()"), self.close_event)
 	 self.open_or_add_pic(self.pyqt_pic,self.all_mask,0.7,0.7)
  	 self.make_histogram()
 	 self.all_con = self.add
-
 
  def erase_area(self):
 	 self.erase_num.append(self.cur_cnt_number)
