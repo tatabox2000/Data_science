@@ -37,9 +37,9 @@ class separate_pic():
 			y1 = 0
 			x1 = x2
 if __name__ == '__main__':
-	os.chdir(u"I:/picture/mills/Amill/")
+	os.chdir(u"C:\\Users\\NPI\\Documents\\jiseika\\std")
 	import glob
-	for pass_name in glob.glob(*.jpg):
+	for pass_name in glob.glob("*.jpg"):
 		name = os.path.basename(pass_name)
 		im = cv2.imread(pass_name)
 		sep = separate_pic()

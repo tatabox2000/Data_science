@@ -589,16 +589,26 @@ SIGNAL("clicked()"), self.close_event)
                         csvWriter.writerow(csvtitle)  
 			for name in glob.glob(ext):
 				self.im = cv2.imread(name)
-                                print name 
-                                calc = self.exec_each_pic(self.im)
+                                calc = self.exec_each_pic(self.im,name)
 				if calc == None:
 					pass
 				else:
 					calc.insert(0,name)
 					csvWriter.writerow(calc) 
 				print calc
+ def save_picture(self,im,name):
+         mask = self.imgray_mask == 255
+         im_mask_color = np.zeros_like(im)
+         im_mask_color[mask]= (0,0,255)
+         alpha = 1.0
+         beta = 0.8
+         add = cv2.addWeighted(im,alpha,im_mask_color,beta,0)
+         name2 = "contour_" + name
+         cv2.imwrite(name2,add)
+         return add
 
- def exec_each_pic(self,im):
+
+ def exec_each_pic(self,im,name):
 	 self.init_var()
  	 color = self.setCurrentIndex()
 	 count = pic_count()
@@ -608,8 +618,13 @@ SIGNAL("clicked()"), self.close_event)
 	 imgray,im_color = count.gray_range_select(blur,self.smallRange,self.largeRange) 
 	 self.imgray_mask,self.all_num,self.all_cnt,self.all_cnt_area = count.all_contour(imgray,self.maxArea,self.minArea)
 	 self.imgray_mask,self.all_cnt_area = self.check_edge()
-	 coor = coordinateForCv()
-	 self.cv_img = coor.cv2pyqtgraph(self.imgray_mask)
+         if self.save_pic_check.isChecked():
+            add = self.save_picture(im,name)  
+
+            #cv2.imshow("",add)
+	    #cv2.waitKey(0)
+	    #cv2.destroyAllWindows() 
+
 	 calc = self.result_calculate()
 	 if calc == None:
 		 calc = ['0','0','0','0','0','0','0']
