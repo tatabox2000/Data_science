@@ -1,1 +1,2 @@
 pyside-uic -o pygraph_Opencv.py pygraph_Opencv.ui  
+pyside-uic -o subwindow_CutOrTrim.py subwindow_CutOrTrim.ui

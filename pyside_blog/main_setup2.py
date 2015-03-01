@@ -5,6 +5,8 @@ import pyqtgraph as pg
 import cv2
 import numpy as np
 import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 import math
 from PySide import QtCore,QtGui
 import os
@@ -13,6 +15,7 @@ from pygraph_Opencv import Ui_Qt_CV_MainWindow
 from opencv_test import opencv_test
 from matrix_co import coordinateForCv
 from pic_count import pic_count
+from subwindow_CutOrTrim import Ui_cut_window
 class CustomPlotItem(pg.ImageItem):
     def __init__(self, *args, **kargs):
         super().__init__(*args, **kargs)
@@ -48,6 +51,11 @@ class CustomPlotItem(pg.ImageItem):
 
         print("hover")
         ev.acceptDrags(QtCore.Qt.LeftButton)
+
+class SubWindow_for_cut_or_trim(QtGui.QDialog,Ui_cut_window):
+ def __init__(self, parent=None):
+        QtGui.QDialog.__init__(self, parent)
+        self.setupUi(self)
 
 class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
  def __init__(self, parent = None):
@@ -106,6 +114,8 @@ SIGNAL("clicked()"), self.close_event)
 	QtCore.QObject.connect( self.color_combo, QtCore.SIGNAL('activated(int)'), self.setCurrentIndex)
 	QtCore.QObject.connect( self.save_mode_combo, QtCore.SIGNAL('activated(int)'), self.set_save_modeIndex)
 	QtCore.QObject.connect( self.smooth_combo, QtCore.SIGNAL('activated(int)'), self.setsmooth)
+	QtCore.QObject.connect(self.actionSeparate_picture, QtCore.SIGNAL("triggered()"), self.separate_picture)
+
 	#QtCore.QObject.connect(self.threshold1_edit, QtCore.SIGNAL("textEdited(const QString&)"), self.change_text)
 	QtCore.QObject.connect(self.size_edit, QtCore.SIGNAL("textEdited(const QString&)"), self.change_size_edit)
 
@@ -119,10 +129,14 @@ SIGNAL("clicked()"), self.close_event)
 	#self.file_scrollbar.valueChanged.connect(self.cur_position)
 
 	#self.form_view_or_image.stateChanged.connect(self.open_or_add_pic)
+	
+ 
+ def separate_picture(self):
+	 self.cut_or_trim_window = SubWindow_for_cut_or_trim(self)
+	 self.cut_or_trim_window.show()
  def change_size_edit(self):
 	self.size = float(self.size_edit.text())
-        self.size = self.size * self.size
-        print self.size
+ 
  def calc_eba(self):
 	if self.eject_edge_or_not.isChecked():
 		coor = coordinateForCv()
@@ -194,9 +208,9 @@ SIGNAL("clicked()"), self.close_event)
         calc = []
 	#areavals = np.array(vals)
         sizevals = self.size * self.size * np.array(vals)
-        _sum = round(np.sum(sizevals),3)
+        _sum = np.sum(sizevals)
         average = round(np.mean(sizevals),3)
-        median = round(np.median(sizevals),3)
+        median = np.median(sizevals)
         var = round(np.var(sizevals),3)
         std = round(np.std(sizevals),3)
         count = len(vals)
@@ -210,13 +224,13 @@ SIGNAL("clicked()"), self.close_event)
         calc.append(std)
 	if self.edgeSum is None:
 	    print "None Edge"
-	    ppm = round(np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]),0)
+	    ppm = int(np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]))
 	    mperm = ppm * 1000
 	    calc.append(ppm)
 	    #calc.append(mperm)
     	else:
 	    print "Eject Edge"
-	    ppm =round(np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum)),0)
+	    ppm =int(np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum)))
 	    mperm = ppm * 1000
 	    calc.append(ppm)
 	    #calc.append(mperm)
@@ -490,7 +504,7 @@ SIGNAL("clicked()"), self.close_event)
 		pic_save = 'Contour'
 		return pic_save
 	if self.save_picture_combo.currentIndex () == 2:
-		pic_save = 'Contour and picture'
+		pic_save = 'Picture with Contour'
 		return pic_save
 
  
@@ -631,11 +645,11 @@ SIGNAL("clicked()"), self.close_event)
 	 if save == 'Contour':
          	name1 = "contour_" + name
          	cv2.imwrite(name1,im_mask_color)
-	 if save == 'Contour and picture':
+	 if save == 'Picture with Contour':
          	alpha = 1.0
          	beta = 0.8
          	add = cv2.addWeighted(im,alpha,im_mask_color,beta,0)
-         	name2 = "contour_and_pic_" + name
+         	name2 = "picture_with_contour_" + name
          	cv2.imwrite(name2,add)
 
  def exec_each_pic(self,im,name):
