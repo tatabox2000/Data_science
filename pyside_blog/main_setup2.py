@@ -693,7 +693,8 @@ SIGNAL("clicked()"), self.close_event)
 		 calc = ['0','0','0','0','0','0','0','0','0']
 	 else:
 		 del calc[0]
-	 self.init_var()
+	 self.vb.clear()
+	 self.sub_vb.clear()
          return calc
 
  def execute(self,im):
@@ -722,7 +723,8 @@ SIGNAL("clicked()"), self.close_event)
 		 j = self.size * self.size * float(i)
 		 area.append(j)
 	 #print area
-	 self.init_var()
+	 self.vb.clear()
+	 self.sub_vb.clear()
 	 return area
 
  def all_drowcontour(self):
