@@ -482,6 +482,17 @@ SIGNAL("clicked()"), self.close_event)
 	if self.extention_combo.currentIndex () == 2:
 		smooth = '*.tiff'
 		return smooth
+ def Save_Image(self):
+	if self.save_picture_combo.currentIndex () == 0:
+		pic_save = None
+		return pic_save
+	if self.save_picture_combo.currentIndex () == 1:
+		pic_save = 'Contour'
+		return pic_save
+	if self.save_picture_combo.currentIndex () == 2:
+		pic_save = 'Contour and picture'
+		return pic_save
+
  
  def View_or_Image(self):
 	if self.form_view_or_image.isChecked():
@@ -611,19 +622,21 @@ SIGNAL("clicked()"), self.close_event)
   over100_pix = math.ceil(over100/(self.size*self.size))
   over250_pix = math.ceil(over250/(self.size*self.size))
 
-
-
  def save_picture(self,im,name):
          mask = self.imgray_mask == 255
          im_mask_color = np.zeros_like(im)
          im_mask_color[mask]= (0,0,255)
-         alpha = 1.0
-         beta = 0.8
-         add = cv2.addWeighted(im,alpha,im_mask_color,beta,0)
-         name2 = "contour_" + name
-         cv2.imwrite(name2,add)
-         return add
+	 save = self.Save_Image()
 
+	 if save == 'Contour':
+         	name1 = "contour_" + name
+         	cv2.imwrite(name1,im_mask_color)
+	 if save == 'Contour and picture':
+         	alpha = 1.0
+         	beta = 0.8
+         	add = cv2.addWeighted(im,alpha,im_mask_color,beta,0)
+         	name2 = "contour_and_pic_" + name
+         	cv2.imwrite(name2,add)
 
  def exec_each_pic(self,im,name):
 	 self.init_var()
@@ -635,8 +648,11 @@ SIGNAL("clicked()"), self.close_event)
 	 imgray,im_color = count.gray_range_select(blur,self.smallRange,self.largeRange) 
 	 self.imgray_mask,self.all_num,self.all_cnt,self.all_cnt_area = count.all_contour(imgray,self.maxArea,self.minArea)
 	 self.imgray_mask,self.all_cnt_area = self.check_edge()
-         if self.save_pic_check.isChecked():
-            add = self.save_picture(im,name)  
+	 save = self.Save_Image()
+	 if save == None:
+		 pass
+	 else:
+            image = self.save_picture(im,name)  
 
             #cv2.imshow("",add)
 	    #cv2.waitKey(0)
@@ -648,6 +664,7 @@ SIGNAL("clicked()"), self.close_event)
 	 else:
 		 del calc[0]
          return calc
+
  def execute(self,im):
 	 self.init_var()
  	 color = self.setCurrentIndex()
@@ -659,9 +676,13 @@ SIGNAL("clicked()"), self.close_event)
 	 self.imgray_mask,self.all_num,self.all_cnt,self.all_cnt_area = count.all_contour(imgray,self.maxArea,self.minArea)
 
 	 self.imgray_mask,self.all_cnt_area = self.check_edge()
-	 coor = coordinateForCv()
-	 self.cv_img = coor.cv2pyqtgraph(self.imgray_mask)
 	 
+	 save = self.Save_Image()
+	 if save == None:
+		 pass
+	 else:
+            image = self.save_picture(im,name)
+
 	 #imgray_mask_bool = np.asarray(self.cv_img,np.bool8)
 	 #self.all_mask = np.zeros_like(self.im)
 	 #self.all_mask[imgray_mask_bool]=(255,255,0)
@@ -671,7 +692,6 @@ SIGNAL("clicked()"), self.close_event)
 		 area.append(j)
 	 #print area
 	 return area
-
 
  def all_drowcontour(self):
 	 self.init_var()
