@@ -178,7 +178,7 @@ SIGNAL("clicked()"), self.close_event)
 
  def check_edge(self):
 	 if self.all_num == None:
-		 pass
+		 return
 	 else:
 		count = pic_count()
 	 	if self.eject_edge_or_not.isChecked():
@@ -206,8 +206,8 @@ SIGNAL("clicked()"), self.close_event)
         return
     else:
         calc = []
-	#areavals = np.array(vals)
-        sizevals = self.size * self.size * np.array(vals)
+	areavals = np.array(vals)
+        sizevals = self.size * self.size * areavals
         _sum = np.sum(sizevals)
         average = round(np.mean(sizevals),3)
         median = np.median(sizevals)
@@ -220,21 +220,35 @@ SIGNAL("clicked()"), self.close_event)
         calc.append(_sum)
         calc.append(average)
         calc.append(median)
-        calc.append(var)
-        calc.append(std)
 	if self.edgeSum is None:
 	    print "None Edge"
 	    ppm = int(np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]))
 	    mperm = ppm * 1000
 	    calc.append(ppm)
+	    over100,over250 = self.pixcel_separate()
+	    over100_contour = areavals[areavals>=over100]
+	    print over100_contour
+	    ppm_over100 = int(np.sum(over100_contour)*1000000/(self.im.shape[0]*self.im.shape[1]))
+	    calc.append(ppm_over100)
+	    over250_contour = areavals[areavals>=over250]
+	    ppm_over250 = int(np.sum(over250_contour)*1000000/(self.im.shape[0]*self.im.shape[1]))
+	    calc.append(ppm_over250)
 	    #calc.append(mperm)
     	else:
 	    print "Eject Edge"
 	    ppm =int(np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum)))
 	    mperm = ppm * 1000
 	    calc.append(ppm)
+	    over100,over250 = self.pixcel_separate()
+	    over100_contour = areavals[areavals>=over100]
+	    ppm_over100 = int(np.sum(over100_contour)*1000000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum)))
+	    calc.append(ppm_over100)
+	    over250_contour = areavals[areavals>=over250]
+	    ppm_over250 = int(np.sum(over250_contour)*1000000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum)))
+	    calc.append(ppm_over250)
 	    #calc.append(mperm)
-
+        calc.append(var)
+        calc.append(std)
         return calc
 
  def table_set(self):
@@ -242,7 +256,7 @@ SIGNAL("clicked()"), self.close_event)
          return
      
      calc = self.result_calculate()
-     title = ["File Name","counts","sum","average","median","var","std","ppm"]
+     title = ["File Name","counts","sum","average","median","ppm","100_ppm","250_ppm","var","std"]
      num = int(len(calc))
      self.tableWidget.setHorizontalHeaderLabels(title)
      for i in np.arange(1,num,1):
@@ -605,9 +619,10 @@ SIGNAL("clicked()"), self.close_event)
 	 if save == 'CSV_count':
 		import codecs
 		import csv
-		settings = ["1pixel Size","Max threshold","Min threshold","Max Area[pix]","Min Area[pix]"]
-		settings_num = [self.size * self.size,self.largeRange,self.smallRange,self.maxArea,self.minArea]
-                csvtitle = ["File Name","counts","sum","average","median","var","std","ppm"]
+		self.pixcel_separate()
+		settings = ["1pixel Size","Max threshold","Min threshold","Max Area[pix]","Min Area[pix]","100 over[pix]","250 over[pix]"]
+		settings_num = [self.size * self.size,self.largeRange,self.smallRange,self.maxArea,self.minArea,self.over100_pix,self.over250_pix]
+                csvtitle = ["File Name","counts","sum","average","median","ppm","100_ppm","250_ppm","var","std"]
 		with codecs.open("pic_count.csv",'w','cp932') as pic:
 			csvWriter = csv.writer(pic)
 			csvWriter.writerow(settings)
@@ -633,8 +648,9 @@ SIGNAL("clicked()"), self.close_event)
   over100 = 7853.981633974483
   over250 = 49087.385212340516
   import math
-  over100_pix = math.ceil(over100/(self.size*self.size))
-  over250_pix = math.ceil(over250/(self.size*self.size))
+  self.over100_pix = math.ceil(over100/(self.size*self.size))
+  self.over250_pix = math.ceil(over250/(self.size*self.size))
+  return self.over100_pix,self.over250_pix
 
  def save_picture(self,im,name):
          mask = self.imgray_mask == 255
@@ -674,9 +690,10 @@ SIGNAL("clicked()"), self.close_event)
 
 	 calc = self.result_calculate()
 	 if calc == None:
-		 calc = ['0','0','0','0','0','0','0']
+		 calc = ['0','0','0','0','0','0','0','0','0']
 	 else:
 		 del calc[0]
+	 self.init_var()
          return calc
 
  def execute(self,im):
@@ -705,6 +722,7 @@ SIGNAL("clicked()"), self.close_event)
 		 j = self.size * self.size * float(i)
 		 area.append(j)
 	 #print area
+	 self.init_var()
 	 return area
 
  def all_drowcontour(self):
