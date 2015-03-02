@@ -5,6 +5,8 @@ import pyqtgraph as pg
 import cv2
 import numpy as np
 import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 import math
 from PySide import QtCore,QtGui
 import os
@@ -13,6 +15,7 @@ from pygraph_Opencv import Ui_Qt_CV_MainWindow
 from opencv_test import opencv_test
 from matrix_co import coordinateForCv
 from pic_count import pic_count
+from subwindow_CutOrTrim import Ui_cut_window
 class CustomPlotItem(pg.ImageItem):
     def __init__(self, *args, **kargs):
         super().__init__(*args, **kargs)
@@ -48,6 +51,11 @@ class CustomPlotItem(pg.ImageItem):
 
         print("hover")
         ev.acceptDrags(QtCore.Qt.LeftButton)
+
+class SubWindow_for_cut_or_trim(QtGui.QDialog,Ui_cut_window):
+ def __init__(self, parent=None):
+        QtGui.QDialog.__init__(self, parent)
+        self.setupUi(self)
 
 class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
  def __init__(self, parent = None):
@@ -106,6 +114,8 @@ SIGNAL("clicked()"), self.close_event)
 	QtCore.QObject.connect( self.color_combo, QtCore.SIGNAL('activated(int)'), self.setCurrentIndex)
 	QtCore.QObject.connect( self.save_mode_combo, QtCore.SIGNAL('activated(int)'), self.set_save_modeIndex)
 	QtCore.QObject.connect( self.smooth_combo, QtCore.SIGNAL('activated(int)'), self.setsmooth)
+	QtCore.QObject.connect(self.actionSeparate_picture, QtCore.SIGNAL("triggered()"), self.separate_picture)
+
 	#QtCore.QObject.connect(self.threshold1_edit, QtCore.SIGNAL("textEdited(const QString&)"), self.change_text)
 	QtCore.QObject.connect(self.size_edit, QtCore.SIGNAL("textEdited(const QString&)"), self.change_size_edit)
 
@@ -119,10 +129,14 @@ SIGNAL("clicked()"), self.close_event)
 	#self.file_scrollbar.valueChanged.connect(self.cur_position)
 
 	#self.form_view_or_image.stateChanged.connect(self.open_or_add_pic)
+	
+ 
+ def separate_picture(self):
+	 self.cut_or_trim_window = SubWindow_for_cut_or_trim(self)
+	 self.cut_or_trim_window.show()
  def change_size_edit(self):
 	self.size = float(self.size_edit.text())
-        self.size = self.size * self.size
-        print self.size
+ 
  def calc_eba(self):
 	if self.eject_edge_or_not.isChecked():
 		coor = coordinateForCv()
@@ -164,7 +178,7 @@ SIGNAL("clicked()"), self.close_event)
 
  def check_edge(self):
 	 if self.all_num == None:
-		 pass
+		 return
 	 else:
 		count = pic_count()
 	 	if self.eject_edge_or_not.isChecked():
@@ -192,11 +206,11 @@ SIGNAL("clicked()"), self.close_event)
         return
     else:
         calc = []
-	#areavals = np.array(vals)
-        sizevals = self.size * self.size * np.array(vals)
-        _sum = round(np.sum(sizevals),3)
+	areavals = np.array(vals)
+        sizevals = self.size * self.size * areavals
+        _sum = np.sum(sizevals)
         average = round(np.mean(sizevals),3)
-        median = round(np.median(sizevals),3)
+        median = np.median(sizevals)
         var = round(np.var(sizevals),3)
         std = round(np.std(sizevals),3)
         count = len(vals)
@@ -206,21 +220,35 @@ SIGNAL("clicked()"), self.close_event)
         calc.append(_sum)
         calc.append(average)
         calc.append(median)
-        calc.append(var)
-        calc.append(std)
 	if self.edgeSum is None:
 	    print "None Edge"
-	    ppm = round(np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]),0)
+	    ppm = int(np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]))
 	    mperm = ppm * 1000
 	    calc.append(ppm)
+	    over100,over250 = self.pixcel_separate()
+	    over100_contour = areavals[areavals>=over100]
+	    print over100_contour
+	    ppm_over100 = int(np.sum(over100_contour)*1000000/(self.im.shape[0]*self.im.shape[1]))
+	    calc.append(ppm_over100)
+	    over250_contour = areavals[areavals>=over250]
+	    ppm_over250 = int(np.sum(over250_contour)*1000000/(self.im.shape[0]*self.im.shape[1]))
+	    calc.append(ppm_over250)
 	    #calc.append(mperm)
     	else:
 	    print "Eject Edge"
-	    ppm =round(np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum)),0)
+	    ppm =int(np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum)))
 	    mperm = ppm * 1000
 	    calc.append(ppm)
+	    over100,over250 = self.pixcel_separate()
+	    over100_contour = areavals[areavals>=over100]
+	    ppm_over100 = int(np.sum(over100_contour)*1000000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum)))
+	    calc.append(ppm_over100)
+	    over250_contour = areavals[areavals>=over250]
+	    ppm_over250 = int(np.sum(over250_contour)*1000000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum)))
+	    calc.append(ppm_over250)
 	    #calc.append(mperm)
-
+        calc.append(var)
+        calc.append(std)
         return calc
 
  def table_set(self):
@@ -228,7 +256,7 @@ SIGNAL("clicked()"), self.close_event)
          return
      
      calc = self.result_calculate()
-     title = ["File Name","counts","sum","average","median","var","std","ppm"]
+     title = ["File Name","counts","sum","average","median","ppm","100_ppm","250_ppm","var","std"]
      num = int(len(calc))
      self.tableWidget.setHorizontalHeaderLabels(title)
      for i in np.arange(1,num,1):
@@ -482,6 +510,17 @@ SIGNAL("clicked()"), self.close_event)
 	if self.extention_combo.currentIndex () == 2:
 		smooth = '*.tiff'
 		return smooth
+ def Save_Image(self):
+	if self.save_picture_combo.currentIndex () == 0:
+		pic_save = None
+		return pic_save
+	if self.save_picture_combo.currentIndex () == 1:
+		pic_save = 'Contour'
+		return pic_save
+	if self.save_picture_combo.currentIndex () == 2:
+		pic_save = 'Picture with Contour'
+		return pic_save
+
  
  def View_or_Image(self):
 	if self.form_view_or_image.isChecked():
@@ -580,9 +619,10 @@ SIGNAL("clicked()"), self.close_event)
 	 if save == 'CSV_count':
 		import codecs
 		import csv
-		settings = ["1pixel Size","Max threshold","Min threshold","Max Area[pix]","Min Area[pix]"]
-		settings_num = [self.size * self.size,self.largeRange,self.smallRange,self.maxArea,self.minArea]
-                csvtitle = ["File Name","counts","sum","average","median","var","std","ppm"]
+		self.pixcel_separate()
+		settings = ["1pixel Size","Max threshold","Min threshold","Max Area[pix]","Min Area[pix]","100 over[pix]","250 over[pix]"]
+		settings_num = [self.size * self.size,self.largeRange,self.smallRange,self.maxArea,self.minArea,self.over100_pix,self.over250_pix]
+                csvtitle = ["File Name","counts","sum","average","median","ppm","100_ppm","250_ppm","var","std"]
 		with codecs.open("pic_count.csv",'w','cp932') as pic:
 			csvWriter = csv.writer(pic)
 			csvWriter.writerow(settings)
@@ -608,22 +648,25 @@ SIGNAL("clicked()"), self.close_event)
   over100 = 7853.981633974483
   over250 = 49087.385212340516
   import math
-  over100_pix = math.ceil(over100/(self.size*self.size))
-  over250_pix = math.ceil(over250/(self.size*self.size))
-
-
+  self.over100_pix = math.ceil(over100/(self.size*self.size))
+  self.over250_pix = math.ceil(over250/(self.size*self.size))
+  return self.over100_pix,self.over250_pix
 
  def save_picture(self,im,name):
          mask = self.imgray_mask == 255
          im_mask_color = np.zeros_like(im)
          im_mask_color[mask]= (0,0,255)
-         alpha = 1.0
-         beta = 0.8
-         add = cv2.addWeighted(im,alpha,im_mask_color,beta,0)
-         name2 = "contour_" + name
-         cv2.imwrite(name2,add)
-         return add
+	 save = self.Save_Image()
 
+	 if save == 'Contour':
+         	name1 = "contour_" + name
+         	cv2.imwrite(name1,im_mask_color)
+	 if save == 'Picture with Contour':
+         	alpha = 1.0
+         	beta = 0.8
+         	add = cv2.addWeighted(im,alpha,im_mask_color,beta,0)
+         	name2 = "picture_with_contour_" + name
+         	cv2.imwrite(name2,add)
 
  def exec_each_pic(self,im,name):
 	 self.init_var()
@@ -635,8 +678,11 @@ SIGNAL("clicked()"), self.close_event)
 	 imgray,im_color = count.gray_range_select(blur,self.smallRange,self.largeRange) 
 	 self.imgray_mask,self.all_num,self.all_cnt,self.all_cnt_area = count.all_contour(imgray,self.maxArea,self.minArea)
 	 self.imgray_mask,self.all_cnt_area = self.check_edge()
-         if self.save_pic_check.isChecked():
-            add = self.save_picture(im,name)  
+	 save = self.Save_Image()
+	 if save == None:
+		 pass
+	 else:
+            image = self.save_picture(im,name)  
 
             #cv2.imshow("",add)
 	    #cv2.waitKey(0)
@@ -644,10 +690,13 @@ SIGNAL("clicked()"), self.close_event)
 
 	 calc = self.result_calculate()
 	 if calc == None:
-		 calc = ['0','0','0','0','0','0','0']
+		 calc = ['0','0','0','0','0','0','0','0','0']
 	 else:
 		 del calc[0]
+	 self.vb.clear()
+	 self.sub_vb.clear()
          return calc
+
  def execute(self,im):
 	 self.init_var()
  	 color = self.setCurrentIndex()
@@ -659,9 +708,13 @@ SIGNAL("clicked()"), self.close_event)
 	 self.imgray_mask,self.all_num,self.all_cnt,self.all_cnt_area = count.all_contour(imgray,self.maxArea,self.minArea)
 
 	 self.imgray_mask,self.all_cnt_area = self.check_edge()
-	 coor = coordinateForCv()
-	 self.cv_img = coor.cv2pyqtgraph(self.imgray_mask)
 	 
+	 save = self.Save_Image()
+	 if save == None:
+		 pass
+	 else:
+            image = self.save_picture(im,name)
+
 	 #imgray_mask_bool = np.asarray(self.cv_img,np.bool8)
 	 #self.all_mask = np.zeros_like(self.im)
 	 #self.all_mask[imgray_mask_bool]=(255,255,0)
@@ -670,8 +723,9 @@ SIGNAL("clicked()"), self.close_event)
 		 j = self.size * self.size * float(i)
 		 area.append(j)
 	 #print area
+	 self.vb.clear()
+	 self.sub_vb.clear()
 	 return area
-
 
  def all_drowcontour(self):
 	 self.init_var()
