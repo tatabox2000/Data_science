@@ -62,6 +62,7 @@ class DesignerMainWindow(QtGui.QMainWindow,Ui_Qt_CV_MainWindow):
         super(DesignerMainWindow, self).__init__(parent)
        	self.ui = Ui_Qt_CV_MainWindow()
 	self.setupUi(self)
+	self.code = self.os_check()
 	
 ###########################################################
 # Table Settings
@@ -138,6 +139,11 @@ SIGNAL("clicked()"), self.close_event)
 	self.size = float(self.size_edit.text())
  
  def calc_eba(self):
+	edgePix = int(5000 / self.size)
+	coor = coordinateForCv()
+
+
+
 	if self.eject_edge_or_not.isChecked():
 		coor = coordinateForCv()
 		coor.eba_calc(self.all_num_with_edge,self.all_cnt_with_edge,self.all_cnt_area_with_edge,self.imgray_mask,self.imgray)
@@ -149,9 +155,10 @@ SIGNAL("clicked()"), self.close_event)
 	self.vb.clear()
 	self.sub_vb.clear()
 	i =  self.file_scrollbar.value()
-	self.im = cv2.imread(self.namelist[i])
-	self.file_edit.setText(self.namelist[i])
-        name = QtGui.QTableWidgetItem(os.path.basename(self.namelist[i]))
+	name2 = self.namelist[i].encode(self.code)
+	self.im = cv2.imread(name2)
+	self.file_edit.setText(name2)
+        name = QtGui.QTableWidgetItem(os.path.basename(name2))
         self.tableWidget.setItem(0,0,name)
 	self.pic_set()
         self.all_con = None
@@ -405,15 +412,17 @@ SIGNAL("clicked()"), self.close_event)
 		self.file_edit.setText(self.filename[0])
                 name = QtGui.QTableWidgetItem(os.path.basename(self.filename[0]))
                 self.tableWidget.setItem(0,0,name)
-                self.im = cv2.imread(self.filename[0])
+		self.filename2 = self.filename[0].encode(self.code)
+                self.im = cv2.imread(self.filename2)
 
- def pic_set(self):
+ def pic_set(self): 
 	if len(self.im.shape) == 3:
        		color = self.setCurrentIndex()
-		count = pic_count()
-		self.imgray = count.color_filter(self.im,color)
 		smooth = self.setsmooth()
-		blur = count.smoothing(self.imgray,smooth)
+
+		count = pic_count()
+		blur = count.smoothing(self.im,smooth)
+		self.imgray = count.color_filter(blur,color)
 		self.sub_window_pic(blur)
 		#cv2.imshow("",self.imgray)
 		#cv2.waitKey(0)
@@ -465,6 +474,14 @@ SIGNAL("clicked()"), self.close_event)
 	if self.save_mode_combo.currentIndex () == 1:
 		save = 'CSV_count'
 		return save
+ def os_check(self):
+	 if os.name is 'nt':
+		 code = 'cp932'
+		 return code
+	 if os.name is not 'nt':
+		 code = 'utf-8'
+		 return code
+
 
  def setCurrentIndex(self):
 	if self.color_combo.currentIndex () == 0:
@@ -612,7 +629,8 @@ SIGNAL("clicked()"), self.close_event)
 		import codecs
 		import csv
 		fol_name = ["Folder place:", folder ]
-		with codecs.open("all_pic_hist.csv",'ab','cp932') as pic:
+		code = self.os_check()
+		with codecs.open("all_pic_hist.csv",'ab',code) as pic:
 			 csvWriter = csv.writer(pic)
 			 csvWriter.writerow(fol_name)
 			 csvWriter.writerow(calc_cnt)  
@@ -623,7 +641,7 @@ SIGNAL("clicked()"), self.close_event)
 		settings = ["1pixel Size","Max threshold","Min threshold","Max Area[pix]","Min Area[pix]","100 over[pix]","250 over[pix]"]
 		settings_num = [self.size * self.size,self.largeRange,self.smallRange,self.maxArea,self.minArea,self.over100_pix,self.over250_pix]
                 csvtitle = ["File Name","counts","sum","average","median","ppm","100_ppm","250_ppm","var","std"]
-		with codecs.open("pic_count.csv",'w','cp932') as pic:
+		with codecs.open("pic_count.csv",'w',self.code) as pic:
 			csvWriter = csv.writer(pic)
 			csvWriter.writerow(settings)
 			csvWriter.writerow(settings_num) 

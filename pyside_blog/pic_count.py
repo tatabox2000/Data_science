@@ -134,10 +134,10 @@ class pic_count:
 
 
  def smoothing(self,imgray,smooth = 'None'):
-	 if  len(imgray.shape) == 3:
-		 print  'gray scale only'
-		 return
-	 elif smooth == 'None':
+	 #if  len(imgray.shape) == 3:
+	#	 print  'gray scale only'
+	#	 return
+	 if smooth == 'None':
 		 return imgray
 	 elif smooth == 'Bilateral' :
 		 blur = cv2.bilateralFilter(imgray,10,20,5)
