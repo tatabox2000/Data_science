@@ -275,9 +275,9 @@ SIGNAL("clicked()"), self.close_event)
      title = ["File Name","counts","ppm","100_count","100_ppm","250_count","250_ppm","sum","average","median","var","std"]
      num = int(len(calc))
      self.tableWidget.setHorizontalHeaderLabels(title)
-     for i in np.arange(1,num,1):
+     for i in np.arange(0,num-1,1):
          item = QtGui.QTableWidgetItem(str(calc[i]))
-         self.tableWidget.setItem(0,i,item)
+         self.tableWidget.setItem(0,i+1,item)
      
  def make_histogram(self):
      if self.cur_contour_area is None and self.all_cnt_area is None:
