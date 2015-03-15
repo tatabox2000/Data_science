@@ -215,6 +215,7 @@ SIGNAL("clicked()"), self.close_event)
         calc = []
 	areavals = np.array(vals)
         sizevals = self.size * self.size * areavals
+	sizevals_list = sizevals.tolist()
         _sum = np.sum(sizevals)
         average = round(np.mean(sizevals),3)
         median = np.median(sizevals)
@@ -222,11 +223,9 @@ SIGNAL("clicked()"), self.close_event)
         std = round(np.std(sizevals),3)
         count = len(vals)
 
-        calc.append(vals)
+        
         calc.append(count)
-        calc.append(_sum)
-        calc.append(average)
-        calc.append(median)
+
 	if self.edgeSum is None:
 	    print "None Edge"
 	    ppm = int(np.sum(vals)*1000000/(self.im.shape[0]*self.im.shape[1]))
@@ -234,11 +233,14 @@ SIGNAL("clicked()"), self.close_event)
 	    calc.append(ppm)
 	    over100,over250 = self.pixcel_separate()
 	    over100_contour = areavals[areavals>=over100]
-	    print over100_contour
+	    
 	    ppm_over100 = int(np.sum(over100_contour)*1000000/(self.im.shape[0]*self.im.shape[1]))
+	    calc.append(len(over100_contour))
 	    calc.append(ppm_over100)
 	    over250_contour = areavals[areavals>=over250]
 	    ppm_over250 = int(np.sum(over250_contour)*1000000/(self.im.shape[0]*self.im.shape[1]))
+	    calc.append(len(over250_contour))
+
 	    calc.append(ppm_over250)
 	    #calc.append(mperm)
     	else:
@@ -249,13 +251,20 @@ SIGNAL("clicked()"), self.close_event)
 	    over100,over250 = self.pixcel_separate()
 	    over100_contour = areavals[areavals>=over100]
 	    ppm_over100 = int(np.sum(over100_contour)*1000000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum)))
+	    calc.append(len(over100_contour))
 	    calc.append(ppm_over100)
 	    over250_contour = areavals[areavals>=over250]
 	    ppm_over250 = int(np.sum(over250_contour)*1000000/(self.im.shape[0]*self.im.shape[1]-(np.sum(self.edge_area)+self.edgeSum)))
+	    calc.append(len(over250_contour))
+
 	    calc.append(ppm_over250)
 	    #calc.append(mperm)
-        calc.append(var)
+        calc.append(_sum)
+        calc.append(average)
+        calc.append(median)
+	calc.append(var)
         calc.append(std)
+	calc.append(sizevals_list)
         return calc
 
  def table_set(self):
@@ -263,7 +272,7 @@ SIGNAL("clicked()"), self.close_event)
          return
      
      calc = self.result_calculate()
-     title = ["File Name","counts","sum","average","median","ppm","100_ppm","250_ppm","var","std"]
+     title = ["File Name","counts","ppm","100_count","100_ppm","250_count","250_ppm","sum","average","median","var","std"]
      num = int(len(calc))
      self.tableWidget.setHorizontalHeaderLabels(title)
      for i in np.arange(1,num,1):
@@ -482,7 +491,6 @@ SIGNAL("clicked()"), self.close_event)
 		 code = 'utf-8'
 		 return code
 
-
  def setCurrentIndex(self):
 	if self.color_combo.currentIndex () == 0:
 		color = 'gray'
@@ -612,7 +620,7 @@ SIGNAL("clicked()"), self.close_event)
 	 self.all_con = None
 	 self.all_cnt = None
  def push_execute_box(self):
-	 save = self.set_save_modeIndex()
+	 save_csv = self.set_save_modeIndex()
 	 folder = QtGui.QFileDialog.getExistingDirectory(self,'Open Dorectory',os.path.expanduser('~'))
 	 if folder == u'':
 		 return
@@ -620,7 +628,7 @@ SIGNAL("clicked()"), self.close_event)
 	 ext = self.setextention()
 	 os.chdir(folder)
 
-	 if save == 'CSV_hist':
+	 if save_csv == 'CSV_hist':
 		calc_cnt =[]
 		for name in glob.glob(ext):
 			 self.im = cv2.imread(name)
@@ -634,13 +642,13 @@ SIGNAL("clicked()"), self.close_event)
 			 csvWriter = csv.writer(pic)
 			 csvWriter.writerow(fol_name)
 			 csvWriter.writerow(calc_cnt)  
-	 if save == 'CSV_count':
+	 if save_csv == 'CSV_count':
 		import codecs
 		import csv
 		self.pixcel_separate()
 		settings = ["1pixel Size","Max threshold","Min threshold","Max Area[pix]","Min Area[pix]","100 over[pix]","250 over[pix]"]
 		settings_num = [self.size * self.size,self.largeRange,self.smallRange,self.maxArea,self.minArea,self.over100_pix,self.over250_pix]
-                csvtitle = ["File Name","counts","sum","average","median","ppm","100_ppm","250_ppm","var","std"]
+                csvtitle = ["File Name","counts","ppm","100_count","100_ppm","250_count","250_ppm","sum","average","median","var","std","contours"]
 		with codecs.open("pic_count.csv",'w',self.code) as pic:
 			csvWriter = csv.writer(pic)
 			csvWriter.writerow(settings)
@@ -653,8 +661,13 @@ SIGNAL("clicked()"), self.close_event)
 					pass
 				else:
 					calc.insert(0,name)
+					contour = calc[12]
+					del calc[12]
+					if contour == None:
+						pass
+					else :
+						calc.extend(contour)
 					csvWriter.writerow(calc) 
-				print calc
                                 
  def pixcel_separate(self):
 ##########################
@@ -674,12 +687,12 @@ SIGNAL("clicked()"), self.close_event)
          mask = self.imgray_mask == 255
          im_mask_color = np.zeros_like(im)
          im_mask_color[mask]= (0,0,255)
-	 save = self.Save_Image()
+	 save_pic = self.Save_Image()
 
-	 if save == 'Contour':
+	 if save_pic == 'Contour':
          	name1 = "contour_" + name
          	cv2.imwrite(name1,im_mask_color)
-	 if save == 'Picture with Contour':
+	 if save_pic == 'Picture with Contour':
          	alpha = 1.0
          	beta = 0.8
          	add = cv2.addWeighted(im,alpha,im_mask_color,beta,0)
@@ -708,11 +721,14 @@ SIGNAL("clicked()"), self.close_event)
 
 	 calc = self.result_calculate()
 	 if calc == None:
-		 calc = ['0','0','0','0','0','0','0','0','0']
+		 calc = ['0','0','0','0','0','0','0','0','0','0','0','0']
 	 else:
-		 del calc[0]
-	 self.vb.clear()
-	 self.sub_vb.clear()
+		 pass
+	 if self.vb == None:
+		 pass
+	 else:
+		 self.vb.clear()
+		 self.sub_vb.clear()
          return calc
 
  def execute(self,im):
@@ -722,7 +738,7 @@ SIGNAL("clicked()"), self.close_event)
 	 _imgray = count.color_filter(im,color)
 	 smooth = self.setsmooth()
 	 blur = count.smoothing(_imgray,smooth)
-	 imgray,im_color = count.gray_range_select(_imgray,self.smallRange,self.largeRange) 
+	 imgray,im_color = count.gray_range_select(blur,self.smallRange,self.largeRange) 
 	 self.imgray_mask,self.all_num,self.all_cnt,self.all_cnt_area = count.all_contour(imgray,self.maxArea,self.minArea)
 
 	 self.imgray_mask,self.all_cnt_area = self.check_edge()
@@ -741,8 +757,11 @@ SIGNAL("clicked()"), self.close_event)
 		 j = self.size * self.size * float(i)
 		 area.append(j)
 	 #print area
-	 self.vb.clear()
-	 self.sub_vb.clear()
+	 if self.vb == None :
+		 pass
+	 else:
+	 	self.vb.clear()
+	 	self.sub_vb.clear()
 	 return area
 
  def all_drowcontour(self):
