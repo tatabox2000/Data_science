@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pygraph_Opencv.ui'
 #
-# Created: Sun Mar 01 20:08:46 2015
+# Created: Wed Mar 11 20:14:00 2015
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -78,7 +78,7 @@ class Ui_Qt_CV_MainWindow(object):
         self.line.setFrameShadow(QtGui.QFrame.Sunken)
         self.line.setObjectName("line")
         self.color_combo = QtGui.QComboBox(self.centralwidget)
-        self.color_combo.setGeometry(QtCore.QRect(170, 168, 271, 22))
+        self.color_combo.setGeometry(QtCore.QRect(170, 200, 271, 22))
         self.color_combo.setObjectName("color_combo")
         self.color_combo.addItem("")
         self.color_combo.addItem("")
@@ -89,19 +89,19 @@ class Ui_Qt_CV_MainWindow(object):
         self.eject_edge_or_not.setGeometry(QtCore.QRect(20, 620, 171, 19))
         self.eject_edge_or_not.setObjectName("eject_edge_or_not")
         self.label_5 = QtGui.QLabel(self.centralwidget)
-        self.label_5.setGeometry(QtCore.QRect(20, 170, 81, 16))
+        self.label_5.setGeometry(QtCore.QRect(20, 200, 81, 16))
         font = QtGui.QFont()
         font.setPointSize(10)
         self.label_5.setFont(font)
         self.label_5.setObjectName("label_5")
         self.label_6 = QtGui.QLabel(self.centralwidget)
-        self.label_6.setGeometry(QtCore.QRect(20, 198, 81, 21))
+        self.label_6.setGeometry(QtCore.QRect(20, 170, 81, 21))
         font = QtGui.QFont()
         font.setPointSize(10)
         self.label_6.setFont(font)
         self.label_6.setObjectName("label_6")
         self.smooth_combo = QtGui.QComboBox(self.centralwidget)
-        self.smooth_combo.setGeometry(QtCore.QRect(170, 200, 271, 22))
+        self.smooth_combo.setGeometry(QtCore.QRect(170, 170, 271, 22))
         self.smooth_combo.setObjectName("smooth_combo")
         self.smooth_combo.addItem("")
         self.smooth_combo.addItem("")
@@ -223,7 +223,7 @@ class Ui_Qt_CV_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.threshold1_slider.sizePolicy().hasHeightForWidth())
         self.threshold1_slider.setSizePolicy(sizePolicy)
-        self.threshold1_slider.setMaximum(254)
+        self.threshold1_slider.setMaximum(255)
         self.threshold1_slider.setProperty("value", 160)
         self.threshold1_slider.setOrientation(QtCore.Qt.Horizontal)
         self.threshold1_slider.setObjectName("threshold1_slider")
@@ -409,7 +409,7 @@ class Ui_Qt_CV_MainWindow(object):
         self.save_picture_combo.addItem("")
         Qt_CV_MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(Qt_CV_MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1158, 29))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1158, 24))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtGui.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
