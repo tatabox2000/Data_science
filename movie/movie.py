@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'movie.ui'
 #
-# Created: Mon Nov 16 13:15:03 2015
+# Created: Mon Nov 16 15:16:23 2015
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
